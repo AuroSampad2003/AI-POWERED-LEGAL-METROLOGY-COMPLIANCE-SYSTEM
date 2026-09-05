@@ -76,7 +76,7 @@ const Sidebar = ({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }) => 
         >
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-md bg-accent-600 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-[18px] h-[18px] text-white" strokeWidth={2} />
+              <ShieldCheck className="w-4.5 h-4.5 text-white" strokeWidth={2} />
             </div>
             {!iconOnly && (
               <span className="text-sm font-semibold text-ink-900 truncate">LM Compliance</span>
