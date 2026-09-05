@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Color system — deep ink navy + verified-teal accent, warm paper background */
+  --color-paper: #F6F6F3;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #FBFBFA;
+
+  --color-ink-900: #101A2E;
+  --color-ink-800: #16233D;
+  --color-ink-700: #24314B;
+  --color-ink-600: #47536B;
+  --color-ink-500: #6B7488;
+  --color-ink-400: #9099A8;
+  --color-ink-300: #C1C6CF;
+  --color-ink-200: #DEE1E6;
+  --color-ink-100: #EBECEC;
+
+  --color-accent-700: #0B5A4C;
+  --color-accent-600: #0F6B5A;
+  --color-accent-500: #147A66;
+  --color-accent-100: #DFF0EB;
+  --color-accent-50: #EFF8F5;
+
+  --color-status-pass: #1E7B4D;
+  --color-status-pass-bg: #E7F5EC;
+  --color-status-fail: #A32E23;
+  --color-status-fail-bg: #FBEAE8;
+  --color-status-warn: #93610F;
+  --color-status-warn-bg: #FBF1DE;
+  --color-status-pending: #5B5490;
+  --color-status-pending-bg: #EEEDF7;
+
+  --font-display: "Source Serif 4", Georgia, serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink-800);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background-color: var(--color-accent-100);
+    color: var(--color-accent-700);
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--color-accent-600);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.35s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
