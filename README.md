@@ -122,57 +122,158 @@ Search previously scanned:
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ Technology Architecture
 
 ```text
-┌──────────────────────────────────────┐
-│          Web / Mobile UI             │
-│        React + Tailwind CSS          │
-└──────────────────┬───────────────────┘
-                   │
-                   ▼
-┌──────────────────────────────────────┐
-│          Backend / REST API          │
-│          Node.js + Express           │
-└──────────────────┬───────────────────┘
-                   │
-          ┌────────┴─────────┐
-          ▼                  ▼
-┌──────────────────┐  ┌──────────────────────┐
-│   Python AI      │  │ Legal Metrology      │
-│     Service      │  │    Rule Engine       │
-│                  │  │                      │
-│ OpenCV           │  │ Versioned Rules      │
-│ PaddleOCR        │  │ Validation Logic     │
-│ AI Extraction    │  │ Compliance Rules     │
-└────────┬─────────┘  └──────────┬───────────┘
-         │                       │
-         └───────────┬───────────┘
-                     ▼
-          ┌────────────────────────┐
-          │   Compliance Result    │
-          │ + Evidence + Report    │
-          └────────────┬───────────┘
-                       │
-              ┌────────┴─────────┐
-              ▼                  ▼
-       ┌─────────────┐    ┌─────────────┐
-       │   MongoDB   │    │ Cloudinary  │
-       │   Records   │    │    Images   │
-       └─────────────┘    └─────────────┘
+                         👤 USER
+                           │
+                           ▼
+              ┌─────────────────────────┐
+              │      FRONTEND           │
+              │  React + Tailwind CSS   │
+              └────────────┬────────────┘
+                           │
+                           ▼
+              ┌─────────────────────────┐
+              │       BACKEND           │
+              │   Node.js + Express     │
+              │        REST API         │
+              └────────────┬────────────┘
+                           │
+             ┌─────────────┴─────────────┐
+             ▼                           ▼
+    ┌──────────────────┐       ┌──────────────────┐
+    │   AI / OCR       │       │  RULE ENGINE     │
+    │                  │       │                  │
+    │ Python           │       │ Legal Metrology  │
+    │ OpenCV           │       │ Validation       │
+    │ PaddleOCR        │       │ Compliance Logic │
+    └────────┬─────────┘       └────────┬─────────┘
+             │                          │
+             └────────────┬─────────────┘
+                          ▼
+                ┌────────────────────┐
+                │ COMPLIANCE RESULT  │
+                │                    │
+                │ ✅ Compliant       │
+                │ ❌ Non-Compliant   │
+                │ ⚠️ Review Required │
+                └─────────┬──────────┘
+                          │
+                ┌─────────┴──────────┐
+                ▼                    ▼
+        ┌──────────────┐      ┌──────────────┐
+        │   MongoDB    │      │  Cloudinary  │
+        │   Database   │      │    Images    │
+        └──────────────┘      └──────────────┘
 ```
 
 ---
 
-## 🛠️ Technology Stack
-Layer	Technology
-Frontend	React, Tailwind CSS
-Backend	Node.js, Express.js
-AI/ML	Python
-OCR/CV	PaddleOCR, OpenCV
-Database	MongoDB
-Authentication	JWT
-Storage	Cloudinary
-Analytics	Recharts
-API	REST API
-Version Control	Git, GitHub
+## 🛠️ Tech Stack
+
+**Frontend**  
+<p>
+  <img src="https://skillicons.dev/icons?i=react,tailwind" />
+</p>
+
+**Backend**  
+<p>
+  <img src="https://skillicons.dev/icons?i=nodejs,express" />
+</p>
+
+**AI / OCR / Computer Vision**  
+<p>
+  <img src="https://skillicons.dev/icons?i=python,opencv" />
+  <img src="https://img.shields.io/badge/PaddleOCR-OCR-00A98F?style=flat-square" />
+</p>
+
+**Database & Storage**  
+<p>
+  <img src="https://skillicons.dev/icons?i=mongodb,cloudinary" />
+</p>
+
+**Authentication & Analytics**  
+<p>
+  <img src="https://img.shields.io/badge/JWT-Auth-000000?style=flat-square&logo=jsonwebtokens&logoColor=white" />
+  <img src="https://img.shields.io/badge/Recharts-Analytics-FF6384?style=flat-square" />
+</p>
+
+**Compliance**  
+<p>
+  <img src="https://img.shields.io/badge/Legal_Metrology-Rule_Engine-6C5CE7?style=flat-square" />
+  <img src="https://img.shields.io/badge/Explainable_AI-Evidence_Based-00A98F?style=flat-square" />
+</p>
+
+**Tools**  
+<p>
+  <img src="https://skillicons.dev/icons?i=git,github,vscode" />
+</p>
+
+---
+
+## 📂 Project Structure
+
+
+
+
+
+---
+
+## 🔄 Compliance Processing Pipeline
+
+### 1. Scan / Upload
+The user captures or uploads an image of the packaged product.
+
+### 2. Image Preprocessing
+OpenCV performs operations such as:
+- Noise reduction
+- Contrast enhancement
+- Rotation correction
+- Perspective correction
+- Image quality assessment
+  
+### 3. OCR
+PaddleOCR extracts:
+```text
+Text
++
+Bounding Boxes
++
+Confidence Scores
+```
+
+4. Information Extraction
+
+The extracted text is converted into structured product information.
+
+Example:
+
+{
+  "productName": "Example Product",
+  "manufacturer": "Example Foods Pvt. Ltd.",
+  "netQuantity": "100 g",
+  "mrp": "₹50",
+  "manufacturingDate": "08/2026",
+  "bestBefore": "6 months",
+  "consumerCare": "1800-XXXXXXX"
+}
+5. Rule Validation
+
+The structured information is evaluated against the applicable Legal Metrology rule set.
+
+6. Compliance Result
+┌──────────────────────────────┐
+│      COMPLIANCE RESULT       │
+├──────────────────────────────┤
+│ Manufacturer          ✓      │
+│ Net Quantity          ✓      │
+│ MRP                   ✓      │
+│ Date Information      ✓      │
+│ Consumer Care         ✗      │
+├──────────────────────────────┤
+│       NON-COMPLIANT          │
+└──────────────────────────────┘
+7. Report Generation
+
+The system generates an evidence-backed digital compliance report.
