@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-paper: #F6F6F3;
+  --color-paper: #FFFFFF;
   --color-surface: #FFFFFF;
   --color-surface-raised: #FBFBFA;
 
@@ -77,6 +77,10 @@
     animation: fadeIn 0.35s ease-out;
   }
 
+  .animate-slide-left {
+    animation: slideInLeft 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -86,6 +90,18 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-60px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
     }
   }
 }

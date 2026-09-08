@@ -1,6 +1,6 @@
 const variants = {
   primary:
-    'bg-ink-900 text-white hover:bg-ink-800 active:bg-ink-900 disabled:bg-ink-300',
+    'bg-accent-600 text-white hover:bg-accent-700 active:bg-accent-700 disabled:bg-accent-100 disabled:text-accent-500',
   accent:
     'bg-accent-600 text-white hover:bg-accent-700 active:bg-accent-700 disabled:bg-accent-100 disabled:text-accent-500',
   secondary:
