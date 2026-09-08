@@ -9,7 +9,7 @@ const DashboardLayout = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-paper flex">
+    <div className="min-h-screen bg-white flex">
       <Sidebar
         collapsed={collapsed}
         onToggleCollapse={() => setCollapsed((c) => !c)}
