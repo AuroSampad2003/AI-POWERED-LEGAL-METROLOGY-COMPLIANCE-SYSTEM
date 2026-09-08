@@ -1,21 +1,38 @@
 import React, { useState, useEffect } from 'react';
 
+// Global set to cache texts that have completed typing once across tab switches and unmounts
+const typedTextCache = new Set();
+
 const AiTypewriterText = ({ text = '', speed = 10, className = '' }) => {
-  const [displayed, setDisplayed] = useState('');
-  const [isTyping, setIsTyping] = useState(true);
+  const isAlreadyTyped = typedTextCache.has(text);
+
+  const [displayed, setDisplayed] = useState(isAlreadyTyped ? text : '');
+  const [isTyping, setIsTyping] = useState(!isAlreadyTyped);
 
   useEffect(() => {
+    if (!text || !String(text).trim()) {
+      setDisplayed('No context provided for this scan.');
+      setIsTyping(false);
+      return;
+    }
+
+    if (typedTextCache.has(text)) {
+      setDisplayed(text);
+      setIsTyping(false);
+      return;
+    }
+
     setDisplayed('');
     setIsTyping(true);
-    if (!text) return;
 
-    let idx = 0;
+    let currentLength = 0;
     const timer = setInterval(() => {
-      if (idx < text.length) {
-        setDisplayed((prev) => prev + text.charAt(idx));
-        idx++;
+      currentLength++;
+      if (currentLength <= text.length) {
+        setDisplayed(text.slice(0, currentLength));
       } else {
         setIsTyping(false);
+        typedTextCache.add(text);
         clearInterval(timer);
       }
     }, speed);

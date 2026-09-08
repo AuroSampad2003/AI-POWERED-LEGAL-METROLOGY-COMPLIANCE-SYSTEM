@@ -169,6 +169,9 @@ def normalize_analysis_response(parsed: dict) -> dict:
             "missing_declarations": missing_keys
         }
         
+    if "context" not in parsed or not parsed["context"]:
+        parsed["context"] = "Packaged commodity label context evaluated against Legal Metrology (Packaged Commodities) Rules, 2011."
+
     if "summary" not in parsed or not parsed["summary"]:
         parsed["summary"] = "Legal Metrology compliance inspection completed."
         
