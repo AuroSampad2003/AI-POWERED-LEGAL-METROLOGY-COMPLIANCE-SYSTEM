@@ -1,5 +1,7 @@
 import Inspection from '../models/Inspection.js';
 
+const OCR_SERVICE_URL = process.env.OCR_SERVICE_URL || 'http://localhost:5001';
+
 export const createInspection = async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
@@ -16,10 +18,11 @@ export const createInspection = async (req, res) => {
 
     const images = req.files.map((file, index) => ({
       url: file.path,
-      publicId: file.filename,
+      publicId: file.filename || `img_${Date.now()}_${index}`,
       view: views[index] || 'OTHER',
     }));
 
+    // Create initial inspection record
     const inspection = await Inspection.create({
       user: req.user.id,
       productName,
@@ -28,9 +31,61 @@ export const createInspection = async (req, res) => {
       status: 'ANALYSIS_PENDING',
     });
 
+    // Call Python OCR & AI Audit Microservice
+    const imageUrls = images.map((img) => img.url);
+    try {
+      console.log(`[OCR Integration] Sending ${imageUrls.length} images to Python OCR server at ${OCR_SERVICE_URL}/ocr/batch...`);
+      
+      const ocrResponse = await fetch(`${OCR_SERVICE_URL}/ocr/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_urls: imageUrls }),
+      });
+
+      if (ocrResponse.ok) {
+        const ocrData = await ocrResponse.json();
+        console.log('[OCR Integration] OCR batch analysis completed successfully!');
+
+        const combinedAudit = ocrData.combined_audit || {};
+        const imagesDetail = ocrData.images_detail || [];
+
+        // Attach annotated Base64 images and extracted text to corresponding image views
+        inspection.images.forEach((img, idx) => {
+          const detail = imagesDetail[idx] || {};
+          if (detail.annotated_image) {
+            img.annotatedImage = `data:image/jpeg;base64,${detail.annotated_image}`;
+          }
+          if (detail.text) {
+            img.extractedText = detail.text;
+          }
+        });
+
+        // Attach AI Analysis JSON
+        inspection.analysis = combinedAudit;
+
+        // Set status based on Legal Metrology 2011 compliance result
+        const isCompliant = combinedAudit?.legal_metrology_2011_compliance?.is_fully_compliant;
+        if (isCompliant === true) {
+          inspection.status = 'COMPLIANT';
+        } else if (isCompliant === false) {
+          inspection.status = 'NON_COMPLIANT';
+        } else {
+          inspection.status = 'ANALYZED';
+        }
+
+        await inspection.save();
+      } else {
+        console.error(`[OCR Integration] OCR service error (HTTP ${ocrResponse.status})`);
+        inspection.status = 'FAILED';
+        await inspection.save();
+      }
+    } catch (ocrErr) {
+      console.error('[OCR Integration] Failed to connect to Python OCR server:', ocrErr.message);
+    }
+
     res.status(201).json({
       success: true,
-      message: 'Uploaded successfully. Analysis pending.',
+      message: 'Inspection processed and analyzed successfully.',
       inspection,
     });
   } catch (error) {

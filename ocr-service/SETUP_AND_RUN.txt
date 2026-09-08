@@ -1,0 +1,103 @@
+========================================================================
+           AI-POWERED LEGAL METROLOGY COMPLIANCE SYSTEM
+                  OCR & AI SERVICE SETUP GUIDE
+========================================================================
+
+This microservice runs a Flask REST API with PaddleOCR for text polygon
+bounding box extraction and Groq LLM for 360-degree Legal Metrology 2011 
+compliance auditing.
+
+------------------------------------------------------------------------
+1. PREREQUISITES
+------------------------------------------------------------------------
+- Python 3.9, 3.10, or 3.11 installed (Python 3.10 / 3.11 recommended).
+- pip (Python package installer).
+- Groq API Key
+
+------------------------------------------------------------------------
+2. STEP-BY-STEP INSTALLATION PROCESS
+------------------------------------------------------------------------
+
+Step 2.1: Open Terminal / Command Prompt and navigate to the ocr-service directory
+-----------------------------------------------------------------------------------
+cd ocr-service
+
+Step 2.2: Create a fresh Python Virtual Environment (.venv)
+------------------------------------------------------------
+On Windows:
+  python -m venv .venv
+
+On Linux / macOS:
+  python3 -m venv .venv
+
+Step 2.3: Activate the Virtual Environment
+------------------------------------------
+On Windows (PowerShell):
+  .\.venv\Scripts\Activate.ps1
+
+On Windows (Command Prompt - CMD):
+  .\.venv\Scripts\activate.bat
+
+On Linux / macOS:
+  source .venv/bin/activate
+
+Step 2.4: Upgrade pip & setuptools
+-----------------------------------
+python -m pip install --upgrade pip setuptools
+
+Step 2.5: Install all required Python dependencies
+--------------------------------------------------
+pip install -r requirements.txt
+
+
+------------------------------------------------------------------------
+3. ENVIRONMENT CONFIGURATION (.env)
+------------------------------------------------------------------------
+Create or verify the '.env' file inside the 'ocr-service' directory:
+
+------------------------------------------------------------------
+PORT=5001
+GROQ_API_KEY=gsk_your_actual_groq_api_key_here
+GROQ_MODEL=groq/compound
+------------------------------------------------------------------
+
+
+------------------------------------------------------------------------
+4. HOW TO RUN THE OCR SERVICE
+------------------------------------------------------------------------
+With the virtual environment active, start the server:
+
+python ocr_server.py
+
+Upon startup, you will see logs initializing PaddleOCR with warm-up:
+  - "Initializing PaddleOCR engine with MKL-DNN CPU acceleration..."
+  - "OCR warm-up call complete."
+  - "Server starting on http://0.0.0.0:5001"
+
+
+------------------------------------------------------------------------
+5. VERIFYING THE SERVICE
+------------------------------------------------------------------------
+Test the health check endpoint in browser or terminal:
+  curl http://localhost:5001/health
+
+Expected Response:
+  {"status": "ok", "service": "legal-metrology-ocr-analyzer"}
+
+
+------------------------------------------------------------------------
+6. TROUBLESHOOTING & COMMON ISSUES
+------------------------------------------------------------------------
+Issue A: PaddlePaddle installation on Windows
+  If standard `pip install paddlepaddle` fails, run:
+  pip install paddlepaddle -f https://www.paddlepaddle.org.cn/whl/windows/mkl/normal.html
+
+Issue B: OpenCV libGL.so.1 error on Headless Linux / Docker
+  If running on a Linux server without GUI drivers:
+  pip uninstall opencv-python -y
+  pip install opencv-python-headless
+
+Issue C: Groq API Rate Limit or Invalid Key
+  Ensure GROQ_API_KEY in .env is valid.
+
+========================================================================
