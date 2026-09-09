@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+
 import Login from './pages/Login';
 import Register from './pages/Register';
+
 import Dashboard from './pages/Dashboard';
 import NewInspection from './pages/NewInspection';
 import MyInspections from './pages/MyInspections';
@@ -14,15 +16,28 @@ import SavedProducts from './pages/SavedProducts';
 import Help from './pages/Help';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+
+// Admin pages
 import AdminDashboard from './pages/AdminDashboard';
+import AdminAnalytics from './pages/AdminAnalytics';
+import AdminInspections from './pages/AdminInspections';
+import AdminProducts from './pages/AdminProducts';
+import AdminViolations from './pages/AdminViolations';
+import AdminUsers from './pages/AdminUsers';
+import AdminRules from './pages/AdminRules';
+import AdminSettings from './pages/AdminSettings';
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          {/* ==================== AUTH ==================== */}
+
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
+          {/* ==================== USER ==================== */}
 
           <Route
             path="/dashboard"
@@ -32,6 +47,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/inspection/new"
             element={
@@ -40,6 +56,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/inspections"
             element={
@@ -48,6 +65,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/complaints"
             element={
@@ -56,6 +74,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/compliance-history"
             element={
@@ -64,6 +83,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/complaints/new/:inspectionId"
             element={
@@ -72,6 +92,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/complaints/:id"
             element={
@@ -80,6 +101,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/saved-products"
             element={
@@ -88,6 +110,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/help"
             element={
@@ -96,6 +119,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/profile"
             element={
@@ -104,6 +128,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/settings"
             element={
@@ -113,12 +138,54 @@ function App() {
             }
           />
 
+          {/* ==================== ADMIN ==================== */}
+
           <Route
             path="/admin/dashboard"
             element={<AdminDashboard />}
           />
 
-          <Route path="*" element={<div>Page Not Found</div>} />
+          <Route
+            path="/admin/analytics"
+            element={<AdminAnalytics />}
+          />
+
+          <Route
+            path="/admin/inspections"
+            element={<AdminInspections />}
+          />
+
+          <Route
+            path="/admin/products"
+            element={<AdminProducts />}
+          />
+
+          <Route
+            path="/admin/violations"
+            element={<AdminViolations />}
+          />
+
+          <Route
+            path="/admin/users"
+            element={<AdminUsers />}
+          />
+
+          <Route
+            path="/admin/rules"
+            element={<AdminRules />}
+          />
+
+          <Route
+            path="/admin/settings"
+            element={<AdminSettings />}
+          />
+
+          {/* ==================== 404 ==================== */}
+
+          <Route
+            path="*"
+            element={<div>Page Not Found</div>}
+          />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

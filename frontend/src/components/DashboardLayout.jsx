@@ -9,7 +9,7 @@ const DashboardLayout = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white flex">
+    <div className="min-h-screen bg-surface flex">
       <Sidebar
         collapsed={collapsed}
         onToggleCollapse={() => setCollapsed((c) => !c)}
@@ -19,7 +19,7 @@ const DashboardLayout = ({ children }) => {
 
       <div className="flex-1 min-w-0 flex flex-col">
         {bp === 'mobile' && (
-          <header className="h-14 bg-white border-b border-ink-200 flex items-center gap-3 px-4 sticky top-0 z-30 shrink-0">
+          <header className="h-14 bg-white border-b border-ink-200 flex items-center gap-3 px-4 sticky top-0 z-30 shrink-0 shadow-sm">
             <button
               onClick={() => setMobileOpen(true)}
               className="p-1.5 -ml-1.5 rounded-md text-ink-600 hover:bg-ink-100 transition-colors duration-150"

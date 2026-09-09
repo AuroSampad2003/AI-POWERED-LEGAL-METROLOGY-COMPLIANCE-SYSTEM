@@ -10,7 +10,7 @@ const AdminDashboardLayout = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#FAFBFA] flex">
+    <div className="min-h-screen bg-white flex">
       <AdminSidebar
         collapsed={collapsed}
         onToggleCollapse={() => setCollapsed((c) => !c)}
