@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -12,6 +12,7 @@ import SavedProducts from './pages/SavedProducts';
 import Help from './pages/Help';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
@@ -96,14 +97,10 @@ function App() {
 
           <Route
             path="/admin/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={['ADMIN']}>
-                <div>Admin Dashboard placeholder</div>
-              </ProtectedRoute>
-            }
+            element={<AdminDashboard />}
           />
 
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<div>Page Not Found</div>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
