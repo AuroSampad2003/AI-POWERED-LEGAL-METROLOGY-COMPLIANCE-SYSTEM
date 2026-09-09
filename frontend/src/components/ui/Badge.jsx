@@ -11,6 +11,7 @@ const statusMap = {
   REJECTED: { label: 'Rejected', color: 'fail' },
   ESCALATED: { label: 'Escalated', color: 'warn' },
   RESOLVED: { label: 'Resolved', color: 'pass' },
+  SUBMITTED: { label: 'Submitted', color: 'pending' },
 };
 
 const colorClasses = {

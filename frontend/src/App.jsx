@@ -8,6 +8,8 @@ import NewInspection from './pages/NewInspection';
 import MyInspections from './pages/MyInspections';
 import MyComplaints from './pages/MyComplaints';
 import ComplianceHistory from './pages/ComplianceHistory';
+import ComplaintSubmit from './pages/ComplaintSubmit';
+import ComplaintDetail from './pages/ComplaintDetail';
 import SavedProducts from './pages/SavedProducts';
 import Help from './pages/Help';
 import Profile from './pages/Profile';
@@ -58,6 +60,22 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['USER']}>
                 <ComplianceHistory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/complaints/new/:inspectionId"
+            element={
+              <ProtectedRoute allowedRoles={['USER']}>
+                <ComplaintSubmit />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/complaints/:id"
+            element={
+              <ProtectedRoute allowedRoles={['USER']}>
+                <ComplaintDetail />
               </ProtectedRoute>
             }
           />

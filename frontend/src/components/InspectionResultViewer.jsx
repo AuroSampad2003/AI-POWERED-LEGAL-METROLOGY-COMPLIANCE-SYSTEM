@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Global set to cache texts that have completed typing once across tab switches and unmounts
 const typedTextCache = new Set();
@@ -58,6 +59,8 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
   if (!inspection) return null;
+
+  const navigate = useNavigate();
 
   const { productName, category, status, createdAt, images = [], analysis = {} } = inspection;
 
@@ -168,13 +171,22 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
             <span className="text-xs uppercase font-semibold px-3 py-1 bg-white text-black border border-gray-300">
               {status}
             </span>
-            <span className={`text-xs uppercase font-bold px-3 py-1 ${
-              isCompliant
+            {/* <span className={`text-xs uppercase font-bold px-3 py-1 ${isCompliant
                 ? 'text-green-600'
                 : 'text-red-600'
-            }`}>
+              }`}>
               {isCompliant ? 'COMPLIANT' : 'NON-COMPLIANT'}
-            </span>
+            </span> */}
+
+            {status === 'NON_COMPLIANT' && (
+              <button
+                onClick={() => navigate(`/complaints/new/${inspection._id}`)}
+                className="text-xs font-bold uppercase px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 shadow-sm transition-colors cursor-pointer"
+              >
+                Report This Product
+              </button>
+            )}
+
           </div>
         </div>
 
@@ -205,31 +217,28 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
       <div className="flex flex-wrap gap-6 bg-white border-b border-gray-200 px-1">
         <button
           onClick={() => setActiveTab('image')}
-          className={`py-3 px-2 text-sm font-bold cursor-pointer transition-all ${
-            activeTab === 'image'
+          className={`py-3 px-2 text-sm font-bold cursor-pointer transition-all ${activeTab === 'image'
               ? 'border-b-2 border-accent-600 text-accent-700'
               : 'border-b-2 border-transparent text-gray-500 hover:text-black'
-          }`}
+            }`}
         >
           Annotated Scan & Context View
         </button>
         <button
           onClick={() => setActiveTab('declarations')}
-          className={`py-3 px-2 text-sm font-bold cursor-pointer transition-all ${
-            activeTab === 'declarations'
+          className={`py-3 px-2 text-sm font-bold cursor-pointer transition-all ${activeTab === 'declarations'
               ? 'border-b-2 border-accent-600 text-accent-700'
               : 'border-b-2 border-transparent text-gray-500 hover:text-black'
-          }`}
+            }`}
         >
           Declarations Verification ({presentCount}/7)
         </button>
         <button
           onClick={() => setActiveTab('json')}
-          className={`py-3 px-4 text-sm font-bold cursor-pointer transition-all ${
-            activeTab === 'json'
+          className={`py-3 px-4 text-sm font-bold cursor-pointer transition-all ${activeTab === 'json'
               ? 'border-b-2 border-accent-600 text-accent-700'
               : 'border-b-2 border-transparent text-gray-500 hover:text-black'
-          }`}
+            }`}
         >
           Raw JSON Payload
         </button>
@@ -241,7 +250,7 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
         {/* TAB 1: Side-by-Side Annotated OCR Image & Product Context */}
         {activeTab === 'image' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
+
             {/* Left Column: Main Image View (Slides smoothly to Left & Stays) + Stacked Avatar PFP Row */}
             <div className="lg:col-span-7 space-y-4 animate-slide-left">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-gray-200 pb-3">
@@ -290,7 +299,7 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
                   <p className="text-xs font-bold text-black uppercase tracking-wider">
                     Package Image Views ({images.length} stacked image views):
                   </p>
-                  
+
                   {/* Overlapping circular PFP avatars stacked on top of each other */}
                   <div className="flex items-center -space-x-3 overflow-visible py-2">
                     {images.map((img, idx) => {
@@ -301,11 +310,10 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
                         <div
                           key={idx}
                           onClick={() => setSelectedImageIndex(idx)}
-                          className={`relative cursor-pointer transition-all duration-300 transform ${
-                            isSelected
+                          className={`relative cursor-pointer transition-all duration-300 transform ${isSelected
                               ? 'z-30 scale-110 ring-4 ring-accent-600 shadow-lg'
                               : 'z-10 opacity-70 hover:opacity-100 hover:scale-105 hover:z-20'
-                          }`}
+                            }`}
                           title={img.view || `View ${idx + 1}`}
                         >
                           <div className="w-14 h-14 rounded-full overflow-hidden bg-white border-2 border-white shadow-md flex items-center justify-center">
@@ -318,7 +326,7 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
                         </div>
                       );
                     })}
-                    
+
                     <span className="text-xs font-semibold text-gray-600 pl-4">
                       Active: <strong className="text-black">{currentImage?.view || `Image ${selectedImageIndex + 1}`}</strong>
                     </span>
@@ -366,9 +374,8 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
                 </div>
                 <div className="flex justify-between pt-1">
                   <span>Overall Status:</span>
-                  <span className={`font-bold uppercase ${
-                    isCompliant ? 'text-green-700' : 'text-red-600'
-                  }`}>
+                  <span className={`font-bold uppercase ${isCompliant ? 'text-green-700' : 'text-red-600'
+                    }`}>
                     {isCompliant ? 'Compliant' : 'Non-Compliant'}
                   </span>
                 </div>
@@ -424,7 +431,7 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
 
                     return (
                       <tr key={dec.key} className="hover:bg-gray-50/60 transition-colors">
-                        
+
                         {/* 1. Declaration & Rule */}
                         <td className="p-4 align-top space-y-1.5">
                           <div className="flex items-center gap-2">
@@ -440,11 +447,10 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
 
                         {/* 2. Status */}
                         <td className="p-4 align-top text-center">
-                          <span className={`inline-block text-xs font-bold px-3 py-1 uppercase rounded ${
-                            isPresent
+                          <span className={`inline-block text-xs font-bold px-3 py-1 uppercase rounded ${isPresent
                               ? 'text-green-700'
                               : 'text-red-700'
-                          }`}>
+                            }`}>
                             {isPresent ? 'Present' : 'Missing'}
                           </span>
                         </td>
