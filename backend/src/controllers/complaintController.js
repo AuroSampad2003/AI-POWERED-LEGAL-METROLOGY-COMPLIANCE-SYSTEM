@@ -1,5 +1,7 @@
 import Complaint from '../models/Complaint.js';
 import Inspection from '../models/Inspection.js';
+import cloudinary from '../config/cloudinary.js';
+import { generateComplaintReportPdf } from '../services/pdfReportService.js';
 
 const DECLARATION_META = [
   { key: 'manufacturer_details', title: 'Manufacturer / Packer Details', rule: 'Rule 6(1)(a)' },
@@ -11,9 +13,14 @@ const DECLARATION_META = [
   { key: 'unit_sale_price', title: 'Unit Sale Price (USP)', rule: 'Rule 6(1)(g)' },
 ];
 
+const isDeclarationPresent = (item = {}) => {
+  const statusVal = item.missing || (item.present ? 'present' : 'missing');
+  return statusVal === 'present';
+};
+
 const extractViolations = (analysis = {}) => {
   const declarations = analysis.declarations || {};
-  return DECLARATION_META.filter((meta) => declarations[meta.key]?.missing === 'missing').map((meta) => {
+  return DECLARATION_META.filter((meta) => !isDeclarationPresent(declarations[meta.key])).map((meta) => {
     const item = declarations[meta.key] || {};
     return {
       key: meta.key,
@@ -21,7 +28,7 @@ const extractViolations = (analysis = {}) => {
       rule: meta.rule,
       reason:
         item.why_missing ||
-        item.likely_reason ||
+        item.missing_summary ||
         `Mandatory declaration under ${meta.rule} is missing or incomplete.`,
     };
   });
@@ -105,46 +112,42 @@ export const getComplaintById = async (req, res) => {
   }
 };
 
-// NEW: admin-only — update status and/or remarks
-export const updateComplaintStatus = async (req, res) => {
+
+export const getComplaintReport = async (req, res) => {
   try {
-    if (req.user.role !== 'ADMIN') {
-      return res.status(403).json({ success: false, message: 'Access denied' });
-    }
+    const complaint = await Complaint.findById(req.params.id)
+      .populate('user', 'fullName email')
+      .populate('inspection');
 
-    const { status, adminRemarks } = req.body;
-
-    const complaint = await Complaint.findById(req.params.id);
     if (!complaint) {
       return res.status(404).json({ success: false, message: 'Complaint not found' });
     }
 
-    if (status !== undefined) complaint.status = status;
-    if (adminRemarks !== undefined) complaint.adminRemarks = adminRemarks;
-
-    await complaint.save();
-
-    res.status(200).json({ success: true, message: 'Complaint updated', complaint });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
-  }
-};
-
-
-// NEW: admin — list all complaints so they can review and decide
-export const getAllComplaintsForAdmin = async (req, res) => {
-  try {
-    if (req.user.role !== 'ADMIN') {
+    const ownerId = complaint.user?._id ? complaint.user._id.toString() : complaint.user.toString();
+    if (ownerId !== req.user.id && req.user.role !== 'ADMIN') {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
 
-    const { status } = req.query;
-    const filter = status ? { status } : {};
+    if (!complaint.enforcementCaseId) {
+      return res.status(400).json({
+        success: false,
+        message: 'The report is available once this complaint has been verified.',
+      });
+    }
 
-    const complaints = await Complaint.find(filter).sort({ createdAt: -1 });
+    const pdfBuffer = await generateComplaintReportPdf(complaint);
 
-    res.status(200).json({ success: true, complaints });
+    complaint.reportGeneratedAt = new Date();
+    await complaint.save();
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `inline; filename="${complaint.complaintId}.pdf"`,
+      'Content-Length': pdfBuffer.length,
+    });
+    res.status(200).send(pdfBuffer);
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    console.error('Generate complaint report error:', error);
+    res.status(500).json({ success: false, message: 'Failed to generate report', error: error.message });
   }
 };

@@ -1,5 +1,7 @@
 import User from '../models/User.js';
 import Inspection from '../models/Inspection.js';
+import Complaint from '../models/Complaint.js';
+import generateEnforcementCaseId from '../utils/generateCaseId.js';
 
 // =====================================================
 // ADMIN DASHBOARD STATISTICS
@@ -326,6 +328,131 @@ export const updateInspectionStatus = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to update inspection status',
+    });
+  }
+};
+
+
+// =====================================================
+// GET ALL COMPLAINTS (for Violation Review page)
+// =====================================================
+
+export const getAllComplaintsAdmin = async (req, res) => {
+  try {
+    const { status } = req.query;
+    const filter = status ? { status } : {};
+
+    const complaints = await Complaint.find(filter)
+      .populate('user', 'fullName email')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: complaints.length,
+      data: complaints,
+    });
+  } catch (error) {
+    console.error('Get complaints error:', error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch complaints',
+    });
+  }
+};
+
+
+// =====================================================
+// GET SINGLE COMPLAINT (for Complaint Review page)
+// =====================================================
+
+export const getComplaintByIdAdmin = async (req, res) => {
+  try {
+    const complaint = await Complaint.findById(req.params.id)
+      .populate('user', 'fullName email')
+      .populate('inspection');
+
+    if (!complaint) {
+      return res.status(404).json({
+        success: false,
+        message: 'Complaint not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: complaint,
+    });
+  } catch (error) {
+    console.error('Get complaint error:', error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch complaint',
+    });
+  }
+};
+
+
+// =====================================================
+// UPDATE COMPLAINT STATUS / ADMIN REMARKS
+// =====================================================
+
+export const updateComplaintReview = async (req, res) => {
+  try {
+    const { status, adminRemarks } = req.body;
+
+    const allowedStatuses = [
+      'SUBMITTED',
+      'PENDING_REVIEW',
+      'UNDER_REVIEW',
+      'MORE_INFO_REQUIRED',
+      'VERIFIED',
+      'REJECTED',
+      'ESCALATED',
+      'RESOLVED',
+    ];
+
+    if (status !== undefined && !allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid complaint status',
+      });
+    }
+
+    const complaint = await Complaint.findById(req.params.id);
+
+    if (!complaint) {
+      return res.status(404).json({
+        success: false,
+        message: 'Complaint not found',
+      });
+    }
+
+    if (status !== undefined) complaint.status = status;
+    if (adminRemarks !== undefined) complaint.adminRemarks = adminRemarks;
+
+    // Generate the enforcement case ID exactly once, the first time a
+    // complaint becomes VERIFIED. Later status changes (e.g. ESCALATED)
+    // never touch or regenerate it.
+    if (status === 'VERIFIED' && !complaint.enforcementCaseId) {
+      complaint.enforcementCaseId = await generateEnforcementCaseId();
+      complaint.verifiedAt = new Date();
+    }
+
+    await complaint.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Complaint updated successfully',
+      data: complaint,
+    });
+  } catch (error) {
+    console.error('Update complaint review error:', error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update complaint',
     });
   }
 };
