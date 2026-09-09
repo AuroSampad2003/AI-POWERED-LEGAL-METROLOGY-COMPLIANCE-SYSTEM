@@ -3,8 +3,8 @@
 
 @theme {
   --color-paper: #FFFFFF;
-  --color-surface: #FFFFFF;
-  --color-surface-raised: #FBFBFA;
+  --color-surface: #FAFBFA;
+  --color-surface-raised: #FFFFFF;
 
   --color-ink-900: #101A2E;
   --color-ink-800: #16233D;
@@ -16,23 +16,66 @@
   --color-ink-200: #DEE1E6;
   --color-ink-100: #EBECEC;
 
-  --color-accent-700: #0B5A4C;
-  --color-accent-600: #0F6B5A;
-  --color-accent-500: #147A66;
-  --color-accent-100: #DFF0EB;
-  --color-accent-50: #EFF8F5;
+  /* Brand green — used sparingly: primary actions, active nav, key figures.
+     Kept deliberately darker/deeper than --color-status-pass so the two
+     never get confused at a glance. */
+  --color-accent-900: #0B3D26;
+  --color-accent-700: #14532D;
+  --color-accent-600: #1B6338;
+  --color-accent-500: #1F7A45;
+  --color-accent-100: #DCEEE1;
+  --color-accent-50:  #F1F8F4;
 
-  --color-status-pass: #1E7B4D;
-  --color-status-pass-bg: #E7F5EC;
-  --color-status-fail: #A32E23;
-  --color-status-fail-bg: #FBEAE8;
-  --color-status-warn: #93610F;
+  /* Status — deliberately outside the brand-green hue family so a
+     "Compliant" badge never reads as "just another green button".
+     Always pair with an icon; never rely on color alone. */
+  --color-status-pass: #16A34A;
+  --color-status-pass-bg: #E9F8EF;
+  --color-status-fail: #DC2626;
+  --color-status-fail-bg: #FDEAEA;
+  --color-status-warn: #D97706;
   --color-status-warn-bg: #FBF1DE;
-  --color-status-pending: #5B5490;
-  --color-status-pending-bg: #EEEDF7;
+  --color-status-pending: #2563EB;
+  --color-status-pending-bg: #E9F0FE;
 
   --font-display: "Inter", sans-serif;
   --font-sans: "Inter", sans-serif;
+}
+
+/* ---- Dark mode: same roles, brightened just enough to stay legible
+   on a near-black surface. Toggle by adding data-theme="dark" to <html>,
+   or swap to a @media (prefers-color-scheme: dark) block if you'd
+   rather follow the OS setting automatically. ---- */
+[data-theme="dark"] {
+  --color-paper: #0B1210;
+  --color-surface: #0F1B16;
+  --color-surface-raised: #16281F;
+
+  --color-ink-900: #F3F5F4;
+  --color-ink-800: #E4E8E6;
+  --color-ink-700: #D0D6D3;
+  --color-ink-600: #A9B2AE;
+  --color-ink-500: #8B948F;
+  --color-ink-400: #6B7470;
+  --color-ink-300: #4B534F;
+  --color-ink-200: #333B37;
+  --color-ink-100: #232A27;
+
+  --color-accent-900: #DCEEE1;
+  --color-accent-700: #3FA866;
+  --color-accent-600: #2F9257;
+  --color-accent-500: #1F7A45;
+  --color-accent-100: #16281F;
+  --color-accent-50:  #101F18;
+
+  --color-status-pass: #22C55E;
+  --color-status-pass-bg: #123822;
+  --color-status-fail: #F87171;
+  --color-status-fail-bg: #3A1717;
+  --color-status-warn: #FBBF24;
+  --color-status-warn-bg: #3A2A0C;
+  --color-status-pending: #60A5FA;
+  --color-status-pending-bg: #16233D;
 }
 
 @layer base {
@@ -41,7 +84,7 @@
   }
 
   body {
-    background-color: var(--color-paper);
+    background-color: var(--color-surface);
     color: var(--color-ink-800);
     font-family: var(--font-sans);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
