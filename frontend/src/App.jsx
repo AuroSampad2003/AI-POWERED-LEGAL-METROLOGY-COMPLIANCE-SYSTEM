@@ -17,15 +17,7 @@ import Help from './pages/Help';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 
-// Admin pages
 import AdminDashboard from './pages/AdminDashboard';
-import AdminAnalytics from './pages/AdminAnalytics';
-import AdminInspections from './pages/AdminInspections';
-import AdminProducts from './pages/AdminProducts';
-import AdminViolations from './pages/AdminViolations';
-import AdminUsers from './pages/AdminUsers';
-import AdminRules from './pages/AdminRules';
-import AdminSettings from './pages/AdminSettings';
 import ViolationReview from './pages/admin/ViolationReview';
 import ComplaintReview from './pages/admin/ComplaintReview';
 import InspectionManagement from './pages/admin/InspectionManagement';

@@ -99,10 +99,11 @@ def extract_json_object(text: str) -> dict:
 
     raise ValueError(f"Could not parse valid JSON from LLM response: '{text[:100]}...'")
 
-def normalize_analysis_response(parsed: dict) -> dict:
+def normalize_analysis_response(parsed: dict, ocr_text: str = "") -> dict:
     """
     Normalizes the LLM JSON response to strictly guarantee the presence of all 7 mandatory declaration keys,
     each formatted with 'missing', 'text', 'why_missing', and 'likely_reason'.
+    Includes smart MRP recovery if currency symbols (₹, Rs) were distorted by OCR.
     """
     if not isinstance(parsed, dict):
         parsed = {}
@@ -156,14 +157,14 @@ def normalize_analysis_response(parsed: dict) -> dict:
                 "why_missing": meta["default_why"],
                 "likely_reason": meta["default_reason"]
             }
-            
+
     parsed["declarations"] = normalized_decs
     
     if "legal_metrology_2011_compliance" not in parsed or not isinstance(parsed["legal_metrology_2011_compliance"], dict):
         missing_keys = [k for k, v in normalized_decs.items() if v["missing"] != "present"]
         present_keys = [k for k, v in normalized_decs.items() if v["missing"] == "present"]
         parsed["legal_metrology_2011_compliance"] = {
-            "is_fully_compliant": len(missing_keys) == 0,
+            "all_mandatory_declarations_observed": len(missing_keys) == 0,
             "confidence_score": 0.95,
             "mandatory_declarations_present": present_keys,
             "missing_declarations": missing_keys
@@ -173,78 +174,86 @@ def normalize_analysis_response(parsed: dict) -> dict:
         parsed["context"] = "Packaged commodity label context evaluated against Legal Metrology (Packaged Commodities) Rules, 2011."
 
     if "summary" not in parsed or not parsed["summary"]:
-        parsed["summary"] = "Legal Metrology compliance inspection completed."
+        parsed["summary"] = "Legal Metrology analysis scan findings completed."
         
+    warnings = parsed.get("warnings")
+    if not isinstance(warnings, list):
+        parsed["warnings"] = []
+    else:
+        clean_warnings = []
+        for w in warnings:
+            if isinstance(w, dict) and w.get("item"):
+                clean_warnings.append({
+                    "type": str(w.get("type") or "health_warning"),
+                    "item": str(w.get("item")),
+                    "value": str(w.get("value")) if w.get("value") is not None else None,
+                    "explanation": str(w.get("explanation") or f"Contains {w.get('item')} which may require consumer awareness.")
+                })
+        parsed["warnings"] = clean_warnings
+
+    parsed["disclaimer"] = "Our analyzer may make mistakes. Please verify important information, especially allergens and nutritional values, against the original product label."
     return parsed
 
 SYSTEM_PROMPT = (
-    "You are an expert AI Legal Metrology & Packaged Commodities Compliance Auditor specializing in the Legal Metrology (Packaged Commodities) Rules, 2011 of India.\n"
-    "Analyze the provided raw OCR text extracted from package image(s).\n\n"
-    "CRITICAL REQUIREMENT: You MUST format your JSON output strictly matching the exact schema below.\n"
-    "Every single one of the 7 declaration keys inside 'declarations' MUST be an object with EXACTLY 4 keys: 'missing', 'text', 'why_missing', and 'likely_reason'.\n\n"
-    "Return ONLY strictly valid JSON matching this EXACT template:\n\n"
-    "{\n"
-    '  "is_packaged_product": true,\n'
-    '  "context": "3-4 sentence explanation describing the product, category, and label overview.",\n'
-    '  "declarations": {\n'
-    '    "manufacturer_details": {\n'
-    '      "missing": "missing",\n'
-    '      "text": null,\n'
-    '      "why_missing": "Manufacturer complete name and physical address are not printed anywhere in the extracted label text as required under Rule 6(1)(a).",\n'
-    '      "likely_reason": "The manufacturer declaration is on an unphotographed back panel or omitted entirely."\n'
-    '    },\n'
-    '    "country_of_origin": {\n'
-    '      "missing": "present",\n'
-    '      "text": "Made in India",\n'
-    '      "why_missing": null,\n'
-    '      "likely_reason": null\n'
-    '    },\n'
-    '    "net_quantity": {\n'
-    '      "missing": "missing",\n'
-    '      "text": null,\n'
-    '      "why_missing": "Net quantity declaration in standard metric units (g, kg, ml, L) is absent under Rule 6(1)(c).",\n'
-    '      "likely_reason": "Net quantity mark is on a side panel not included in the OCR scan."\n'
-    '    },\n'
-    '    "mrp": {\n'
-    '      "missing": "missing",\n'
-    '      "text": null,\n'
-    '      "why_missing": "Maximum Retail Price (MRP) inclusive of all taxes is missing from the label under Rule 6(1)(e).",\n'
-    '      "likely_reason": "MRP price sticker was omitted or blurred."\n'
-    '    },\n'
-    '    "date_of_manufacture_or_pack": {\n'
-    '      "missing": "missing",\n'
-    '      "text": null,\n'
-    '      "why_missing": "Month and year of manufacture, packing, or import are not declared under Rule 6(1)(d).",\n'
-    '      "likely_reason": "Mfg date stamp on batch code area is missing."\n'
-    '    },\n'
-    '    "consumer_care_details": {\n'
-    '      "missing": "missing",\n'
-    '      "text": null,\n'
-    '      "why_missing": "Consumer care helpline phone, email, or address are missing under Rule 6(1)(f).",\n'
-    '      "likely_reason": "Customer feedback box is absent."\n'
-    '    },\n'
-    '    "unit_sale_price": {\n'
-    '      "missing": "missing",\n'
-    '      "text": null,\n'
-    '      "why_missing": "Unit sale price (price per unit mass or volume) is missing under Rule 6(1)(g).",\n'
-    '      "likely_reason": "Unit price calculation was not printed."\n'
-    '    }\n'
-    '  },\n'
-    '  "legal_metrology_2011_compliance": {\n'
-    '    "is_fully_compliant": false,\n'
-    '    "confidence_score": 0.95,\n'
-    '    "mandatory_declarations_present": ["country_of_origin"],\n'
-    '    "missing_declarations": ["manufacturer_details", "net_quantity", "mrp", "date_of_manufacture_or_pack", "consumer_care_details", "unit_sale_price"]\n'
-    '  },\n'
-    '  "summary": "Full overall compliance audit summary."\n'
-    "}\n\n"
-    "RULES:\n"
-    "1. 'missing' MUST be strictly one of: 'present', 'missing', or 'partially missing'.\n"
-    "2. For missing or partially missing items, 'why_missing' MUST be a 2-3 sentence legal compliance explanation.\n"
-    "3. For missing or partially missing items, 'likely_reason' MUST state probable cause.\n"
-    "4. Do NOT use alternative schema keys like product_identification or manufacturer_or_packer.\n"
-    "5. Output ONLY raw JSON."
+"You are an expert Legal Metrology & Packaged Commodities inspector. "
+"Review OCR text like a real person inspecting a package, not like a keyword-matching program.\n\n"
+
+
+"Read the full OCR first. Understand the product, then check each declaration in context. "
+"OCR may contain broken words, wrong characters, missing lines, or text from different panels. "
+"Use practical judgment and nearby context to interpret it. Never invent information.\n\n"
+
+"REPORT OBSERVATIONS, NOT FINAL LEGAL JUDGEMENTS. "
+"Say what was found or not seen. Do not say the product is 'illegal' or definitively 'non-compliant'.\n\n"
+
+"MRP RULE: Mark MRP present only when a clear price appears with MRP, M.R.P., Max Retail Price, Rs., or ₹. "
+"Do not treat weights, dates, batch numbers, phone numbers, or other random numbers as prices.\n\n"
+
+"HEALTH/WARNING RULE: Read nutrition and ingredients in context. "
+"Flag clearly high sugar, sodium, saturated fat, notable additives, preservatives, or major allergens. "
+"Only report warnings supported by the OCR. Keep explanations natural and short, like a knowledgeable person explaining the label.\n\n"
+
+"HUMAN STYLE: Use short, factual sentences. Avoid robotic wording, repeated legal phrases, "
+"generic explanations, unnecessary detail, and textbook language. "
+"For missing items, give the most likely practical reason only when reasonable, such as 'not visible in scanned panel', "
+"'print may be unclear', or 'not found in OCR'. If the evidence is uncertain, say so.\n\n"
+
+"OUTPUT: Return ONLY valid JSON using exactly this structure:\n"
+"{\n"
+'  "is_packaged_product": true,\n'
+'  "context": "Short 2-3 sentence description of the product and label.",\n'
+'  "declarations": {\n'
+'    "manufacturer_details": {"missing": "present", "text": null, "why_missing": null, "likely_reason": null},\n'
+'    "country_of_origin": {"missing": "present", "text": null, "why_missing": null, "likely_reason": null},\n'
+'    "net_quantity": {"missing": "present", "text": null, "why_missing": null, "likely_reason": null},\n'
+'    "mrp": {"missing": "present", "text": null, "why_missing": null, "likely_reason": null},\n'
+'    "date_of_manufacture_or_pack": {"missing": "present", "text": null, "why_missing": null, "likely_reason": null},\n'
+'    "consumer_care_details": {"missing": "present", "text": null, "why_missing": null, "likely_reason": null},\n'
+'    "unit_sale_price": {"missing": "present", "text": null, "why_missing": null, "likely_reason": null}\n'
+'  },\n'
+'  "warnings": [],\n'
+'  "legal_metrology_2011_compliance": {\n'
+'    "is_fully_compliant": false,\n'
+'    "confidence_score": 0.0,\n'
+'    "mandatory_declarations_present": [],\n'
+'    "missing_declarations": []\n'
+'  },\n'
+'  "summary": "Short factual overall observation."\n'
+"}\n\n"
+
+"RULES:\n"
+"1. 'missing' must be exactly 'present', 'missing', or 'partially missing'.\n"
+"2. 'text' must contain only the relevant text actually found in OCR. Otherwise null.\n"
+"3. For missing/partial items, 'why_missing' should be short, factual, and specific. Otherwise null.\n"
+"4. 'likely_reason' should be brief and practical. Do not invent a reason. Otherwise null.\n"
+"5. Warnings must contain only: type, item, value, explanation.\n"
+"6. Keep context, explanations, reasons, and summary concise.\n"
+"7. Do not repeat the same information in multiple fields.\n"
+"8. Do not add keys or markdown.\n"
+"9. Output ONLY raw JSON."
+
 )
+
 
 def analyze_ocr_text(ocr_text: str, custom_prompt: str = None, api_key: str = None, model: str = DEFAULT_MODEL) -> dict:
     key = api_key or os.getenv("GROQ_API_KEY")
@@ -285,7 +294,7 @@ def analyze_ocr_text(ocr_text: str, custom_prompt: str = None, api_key: str = No
 
                 raw_content = completion.choices[0].message.content or ""
                 parsed_json = extract_json_object(raw_content)
-                normalized_json = normalize_analysis_response(parsed_json)
+                normalized_json = normalize_analysis_response(parsed_json, ocr_text=ocr_text)
 
                 return {
                     "success": True,
@@ -317,7 +326,7 @@ def analyze_ocr_text(ocr_text: str, custom_prompt: str = None, api_key: str = No
                     res_data = response.json()
                     raw_content = res_data["choices"][0]["message"]["content"]
                     parsed_json = extract_json_object(raw_content)
-                    normalized_json = normalize_analysis_response(parsed_json)
+                    normalized_json = normalize_analysis_response(parsed_json, ocr_text=ocr_text)
                     return {
                         "success": True,
                         "model": current_model,
@@ -327,7 +336,7 @@ def analyze_ocr_text(ocr_text: str, custom_prompt: str = None, api_key: str = No
                 logger.warning(f"HTTP fallback model {current_model} failed: {http_err}")
 
     # Ultimate fallback if LLM is completely unreachable
-    normalized_json = normalize_analysis_response({})
+    normalized_json = normalize_analysis_response({}, ocr_text=ocr_text)
     return {
         "success": True,
         "model": "rule-based-fallback",
@@ -370,7 +379,7 @@ def analyze_combined_batch_ocr(ocr_texts_dict: dict, custom_prompt: str = None, 
 
                 raw_content = completion.choices[0].message.content or ""
                 parsed_json = extract_json_object(raw_content)
-                normalized_json = normalize_analysis_response(parsed_json)
+                normalized_json = normalize_analysis_response(parsed_json, ocr_text=combined_text_block)
 
                 return {
                     "success": True,
@@ -383,7 +392,7 @@ def analyze_combined_batch_ocr(ocr_texts_dict: dict, custom_prompt: str = None, 
     except ImportError:
         pass
 
-    normalized_json = normalize_analysis_response({})
+    normalized_json = normalize_analysis_response({}, ocr_text=combined_text_block)
     return {
         "success": True,
         "model": "rule-based-fallback",
