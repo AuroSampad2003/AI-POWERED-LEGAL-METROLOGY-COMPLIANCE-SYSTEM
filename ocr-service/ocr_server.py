@@ -7,6 +7,7 @@ os.environ["FLAGS_use_mkldnn"] = "0"
 
 import base64
 import json
+import re
 import logging
 import time
 import requests
@@ -67,6 +68,140 @@ def initialize_ocr_engine():
     init_duration = time.time() - start_time
     logger.info(f"OCR engine initialization complete. Took {init_duration:.2f} seconds.")
     return ocr_engine
+
+def detect_barcodes_from_image(img, formatted_lines=None):
+    """
+    Detects 1D/2D barcodes from an OpenCV BGR image using pyzbar, built-in cv2.BarcodeDetector,
+    white margin padding (quiet zone), upscaling, rotations, and OCR digit extraction fallback.
+    Returns list of {"type": ..., "value": ...}.
+    """
+    barcodes = []
+    if img is None:
+        return barcodes
+
+    def _clean_val(val, btype="EAN13"):
+        v = str(val).strip()
+        v_clean = re.sub(r'[^A-Za-z0-9\-]', '', v)
+        if v_clean:
+            return {"type": str(btype or "EAN13").upper(), "value": v_clean}
+        return None
+
+    seen = set()
+    def _add_barcode(val, btype="EAN13"):
+        item = _clean_val(val, btype)
+        if item and item["value"] not in seen:
+            seen.add(item["value"])
+            barcodes.append(item)
+
+    # Prepare image variants: padded with 40px white margin (quiet zone), upscaled 2x
+    variants = []
+    try:
+        padded = cv2.copyMakeBorder(img, 40, 40, 40, 40, cv2.BORDER_CONSTANT, value=[255, 255, 255])
+        variants.append(padded)
+        
+        h, w = padded.shape[:2]
+        if w < 1200 or h < 1200:
+            upscaled = cv2.resize(padded, (0, 0), fx=2.0, fy=2.0, interpolation=cv2.INTER_CUBIC)
+            variants.append(upscaled)
+    except Exception:
+        variants.append(img)
+
+    if not variants:
+        variants = [img]
+
+    # 1. Try pyzbar decoding across variants and 4 rotations (0, 90, 180, 270 deg)
+    try:
+        from pyzbar import pyzbar
+        for v_img in variants:
+            if barcodes:
+                break
+            for angle in [0, 90, 180, 270]:
+                if barcodes:
+                    break
+                if angle == 0:
+                    rot_img = v_img
+                elif angle == 90:
+                    rot_img = cv2.rotate(v_img, cv2.ROTATE_90_CLOCKWISE)
+                elif angle == 180:
+                    rot_img = cv2.rotate(v_img, cv2.ROTATE_180)
+                elif angle == 270:
+                    rot_img = cv2.rotate(v_img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+                
+                decoded_objs = pyzbar.decode(rot_img)
+                for obj in decoded_objs:
+                    b_type = obj.type
+                    b_val = obj.data.decode("utf-8", errors="ignore")
+                    _add_barcode(b_val, b_type)
+    except Exception as err:
+        logger.debug(f"pyzbar decoding note: {err}")
+
+    # 2. Try OpenCV built-in BarcodeDetector if pyzbar didn't find anything
+    if not barcodes:
+        try:
+            if hasattr(cv2, "BarcodeDetector"):
+                detector = cv2.BarcodeDetector()
+                for v_img in variants:
+                    if barcodes:
+                        break
+                    retval, decoded_info, decoded_type, _ = detector.detectAndDecode(v_img)
+                    if retval:
+                        for val, btype in zip(decoded_info, decoded_type):
+                            _add_barcode(val, btype)
+        except Exception as err:
+            logger.debug(f"OpenCV BarcodeDetector note: {err}")
+
+    # 3. Fallback: OCR digit extraction for EAN-13 / UPC / GTIN barcodes (8 to 14 digits)
+    if not barcodes and formatted_lines:
+        for line in formatted_lines:
+            txt = line.get("text", "") if isinstance(line, dict) else str(line)
+            cleaned_digits = re.sub(r'\s+', '', txt)
+            matches = re.findall(r'\b\d{8,14}\b', cleaned_digits)
+            for m in matches:
+                btype = "EAN13" if len(m) == 13 else ("UPC" if len(m) == 12 else "BARCODE")
+                _add_barcode(m, btype)
+
+    return barcodes
+
+def fetch_open_food_facts(barcode: str) -> dict:
+    """
+    Queries Open Food Facts API v2 for barcode information.
+    Retrieves product name, brand, net quantity, ingredients, allergens,
+    nutrition, manufacturing country/place, categories, and reference prices.
+    """
+    if not barcode or not isinstance(barcode, str):
+        return {"source": "Open Food Facts", "found": False, "data": {}}
+    
+    clean_code = str(barcode).strip()
+    url = f"https://world.openfoodfacts.org/api/v2/product/{clean_code}.json"
+    headers = {"User-Agent": "LegalMetrologyComplianceSystem/1.0"}
+    
+    try:
+        resp = requests.get(url, headers=headers, timeout=5)
+        if resp.status_code == 200:
+            res_json = resp.json()
+            if res_json.get("status") == 1 and res_json.get("product"):
+                p = res_json["product"]
+                price_val = p.get("price") or p.get("price_in_currency") or p.get("prices") or None
+                return {
+                    "source": "Open Food Facts",
+                    "found": True,
+                    "data": {
+                        "product_name": p.get("product_name") or p.get("product_name_en") or None,
+                        "brand": p.get("brands") or p.get("brand_owner") or None,
+                        "quantity": p.get("quantity") or None,
+                        "ingredients": p.get("ingredients_text") or p.get("ingredients_text_en") or None,
+                        "allergens": p.get("allergens") or p.get("allergens_from_ingredients") or None,
+                        "nutrition": p.get("nutriments") or None,
+                        "manufacturing_country": p.get("manufacturing_places") or p.get("countries") or p.get("origins") or None,
+                        "categories": p.get("categories") or None,
+                        "labels_certifications": p.get("labels") or None,
+                        "price_reference": price_val
+                    }
+                }
+    except Exception as err:
+        logger.warning(f"Open Food Facts lookup note for barcode {clean_code}: {err}")
+        
+    return {"source": "Open Food Facts", "found": False, "data": {}}
 
 def get_ocr_engine():
     global ocr_engine
@@ -155,6 +290,7 @@ def health_check():
 
 @app.route("/", methods=["POST"])
 @app.route("/ocr", methods=["POST"])
+@app.route("/ocr/process", methods=["POST"])
 def process_ocr():
     """
     POST /ocr
@@ -270,12 +406,21 @@ def process_ocr():
 
         logger.info(f"Processed OCR request: {len(formatted_lines)} lines detected in {elapsed:.3f}s (DPI: {dpi})")
 
-        # Step 1: Send ONLY extracted text to Groq LLM for AI analysis
+        barcodes = detect_barcodes_from_image(img, formatted_lines)
         req_data = (request.get_json(silent=True) or {}) if request.is_json else {}
         custom_prompt = req_data.get("prompt") or request.form.get("prompt")
-        
-        logger.info("Sending extracted text labels to Groq LLM for AI analysis...")
-        llm_result = analyze_ocr_text(full_extracted_text, custom_prompt=custom_prompt)
+        product_reference = req_data.get("product_reference")
+
+        if not product_reference and barcodes:
+            product_reference = fetch_open_food_facts(barcodes[0]["value"])
+
+        logger.info(f"Sending extracted text labels + {len(barcodes)} barcodes to Groq LLM for AI analysis...")
+        llm_result = analyze_ocr_text(
+            full_extracted_text,
+            custom_prompt=custom_prompt,
+            barcodes=barcodes,
+            product_reference=product_reference
+        )
 
         # Step 2: Prepare Node.js webhook payload (Annotated image + text + LLM analysis)
         forward_target = req_data.get("forward_url") or req_data.get("node_server_url") or os.getenv("NODE_SERVER_URL")
@@ -288,6 +433,8 @@ def process_ocr():
                 forward_payload = {
                     "image": annotated_image_b64,  # Base64 annotated image with bounding boxes & font size tags
                     "text": full_extracted_text,
+                    "barcodes": barcodes,
+                    "product_reference": product_reference,
                     "lines": formatted_lines,
                     "count": len(formatted_lines),
                     "dpi": dpi,
@@ -307,6 +454,8 @@ def process_ocr():
             "success": True,
             "text": full_extracted_text,
             "count": len(formatted_lines),
+            "barcodes": barcodes,
+            "product_reference": product_reference or {"source": "Open Food Facts", "found": False, "data": {}},
             "llm_analysis": llm_result.get("analysis") if llm_result.get("success") else llm_result,
             "processing_time_sec": round(elapsed, 4),
             "forwarded_to_node": forwarded_status
@@ -468,6 +617,7 @@ def process_ocr_batch():
                                 "width_px": metrics["width_px"]
                             })
 
+            barcodes = detect_barcodes_from_image(img, formatted_lines)
             full_extracted_text = "\n".join([line["text"] for line in formatted_lines])
             annotated_image_b64 = generate_annotated_image(img, formatted_lines)
 
@@ -476,6 +626,7 @@ def process_ocr_batch():
                 "image_name": f"Image {index + 1}",
                 "success": True,
                 "text": full_extracted_text,
+                "barcodes": barcodes,
                 "count": len(formatted_lines),
                 "lines": formatted_lines,
                 "annotated_image": annotated_image_b64
@@ -486,6 +637,7 @@ def process_ocr_batch():
                 "index": index,
                 "image_name": f"Image {index + 1}",
                 "success": False,
+                "barcodes": [],
                 "error": str(e)
             }
 
@@ -496,14 +648,34 @@ def process_ocr_batch():
         res = _worker(item)
         results.append(res)
 
-    # Step 2: Combine all OCR texts and run ONE single LLM request (60% faster)
+    product_reference = req_data.get("product_reference")
+
+    all_barcodes = []
+    seen_barcodes = set()
+    for r in results:
+        if r and r.get("barcodes"):
+            for b in r["barcodes"]:
+                val = b.get("value")
+                if val and val not in seen_barcodes:
+                    seen_barcodes.add(val)
+                    all_barcodes.append(b)
+
+    if not product_reference and all_barcodes:
+        product_reference = fetch_open_food_facts(all_barcodes[0]["value"])
+
+    # Step 2: Combine all OCR texts, barcodes, and product reference into ONE single LLM audit request
     ocr_texts_dict = {
         res["image_name"]: res.get("text", "") 
         for res in results if res and res.get("success")
     }
 
-    logger.info("Executing single combined 360-degree LLM audit & image mismatch check...")
-    combined_llm_result = analyze_combined_batch_ocr(ocr_texts_dict, custom_prompt=custom_prompt)
+    logger.info(f"Executing single combined LLM audit with {len(all_barcodes)} detected barcodes...")
+    combined_llm_result = analyze_combined_batch_ocr(
+        ocr_texts_dict,
+        custom_prompt=custom_prompt,
+        barcodes=all_barcodes,
+        product_reference=product_reference
+    )
     combined_audit = combined_llm_result.get("analysis") if combined_llm_result.get("success") else combined_llm_result
 
     # Step 3: Forward to Node.js server if requested
@@ -512,12 +684,14 @@ def process_ocr_batch():
             logger.info(f"Forwarding batch payload to Node.js server: {forward_target}")
             forward_payload = {
                 "total_images": len(images_to_process),
+                "barcodes": all_barcodes,
                 "combined_audit": combined_audit,
                 "images": [
                     {
                         "image_index": r["index"],
                         "annotated_image": r.get("annotated_image"),
-                        "text": r.get("text")
+                        "text": r.get("text"),
+                        "barcodes": r.get("barcodes", [])
                     } for r in results if r and r.get("success")
                 ]
             }
@@ -532,6 +706,7 @@ def process_ocr_batch():
         "success": True,
         "total_images": len(images_to_process),
         "processing_time_sec": round(total_elapsed, 4),
+        "barcodes": all_barcodes,
         "combined_audit": combined_audit,
         "images_detail": results
     }), 200

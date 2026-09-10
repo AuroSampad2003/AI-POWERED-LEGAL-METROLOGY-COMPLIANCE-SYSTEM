@@ -74,6 +74,14 @@ Upon startup, you will see logs initializing PaddleOCR with warm-up:
   - "OCR warm-up call complete."
   - "Server starting on http://0.0.0.0:5001"
 
+------------------------------------------------------------------------
+4b. OPTIONAL: RUN DOMAIN-SPECIFIC LLM FINE-TUNING DEMONSTRATION
+------------------------------------------------------------------------
+To showcase LLM fine-tuning on Legal Metrology Rule datasets for judges:
+
+python train_llm.py
+
+
 
 ------------------------------------------------------------------------
 5. VERIFYING THE SERVICE

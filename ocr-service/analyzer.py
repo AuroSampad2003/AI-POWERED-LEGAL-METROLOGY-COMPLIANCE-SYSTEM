@@ -99,11 +99,11 @@ def extract_json_object(text: str) -> dict:
 
     raise ValueError(f"Could not parse valid JSON from LLM response: '{text[:100]}...'")
 
-def normalize_analysis_response(parsed: dict, ocr_text: str = "") -> dict:
+def normalize_analysis_response(parsed: dict, ocr_text: str = "", barcodes: list = None, product_reference: dict = None) -> dict:
     """
     Normalizes the LLM JSON response to strictly guarantee the presence of all 7 mandatory declaration keys,
     each formatted with 'missing', 'text', 'why_missing', and 'likely_reason'.
-    Includes smart MRP recovery if currency symbols (₹, Rs) were distorted by OCR.
+    Attaches barcodes array and product_reference data.
     """
     if not isinstance(parsed, dict):
         parsed = {}
@@ -191,12 +191,28 @@ def normalize_analysis_response(parsed: dict, ocr_text: str = "") -> dict:
                 })
         parsed["warnings"] = clean_warnings
 
+    if barcodes is not None:
+        parsed["barcodes"] = barcodes
+    elif "barcodes" not in parsed:
+        parsed["barcodes"] = []
+
+    if product_reference is not None:
+        parsed["product_reference"] = product_reference
+    elif "product_reference" not in parsed:
+        parsed["product_reference"] = {"source": "Open Food Facts", "found": False, "data": {}}
+
     parsed["disclaimer"] = "Our analyzer may make mistakes. Please verify important information, especially allergens and nutritional values, against the original product label."
     return parsed
 
 SYSTEM_PROMPT = (
 "You are an expert Legal Metrology & Packaged Commodities inspector. "
 "Review OCR text like a real person inspecting a package, not like a keyword-matching program.\n\n"
+
+"EVIDENCE HIERARCHY RULE:\n"
+"1. Package OCR text is PRIMARY EVIDENCE. Base all compliance decisions on physical package text.\n"
+"2. Product Reference data (e.g. Open Food Facts) is provided solely for reference.\n"
+"3. Do NOT let database values overwrite information found on the actual package label.\n"
+"4. If there is a price or attribute discrepancy (e.g., Package MRP ₹110 vs Database MRP ₹100), do NOT automatically treat it as a Legal Metrology violation; treat it as a reference mismatch / manual verification note.\n\n"
 
 
 "Read the full OCR first. Understand the product, then check each declaration in context. "
@@ -255,7 +271,7 @@ SYSTEM_PROMPT = (
 )
 
 
-def analyze_ocr_text(ocr_text: str, custom_prompt: str = None, api_key: str = None, model: str = DEFAULT_MODEL) -> dict:
+def analyze_ocr_text(ocr_text: str, custom_prompt: str = None, api_key: str = None, model: str = DEFAULT_MODEL, barcodes: list = None, product_reference: dict = None) -> dict:
     key = api_key or os.getenv("GROQ_API_KEY")
     if not key:
         return {
@@ -269,9 +285,16 @@ def analyze_ocr_text(ocr_text: str, custom_prompt: str = None, api_key: str = No
     if "groq/compound-mini" not in candidate_models:
         candidate_models.append("groq/compound-mini")
 
+    ref_block = ""
+    if barcodes:
+        ref_block += f"\n\nDETECTED BARCODES:\n{json.dumps(barcodes, indent=2)}"
+    if product_reference:
+        ref_block += f"\n\nPRODUCT REFERENCE DATA (OPEN FOOD FACTS - REFERENCE ONLY):\n{json.dumps(product_reference, indent=2)}"
+
     user_content = (
-        f"Analyze the following OCR text extracted from an image and perform Legal Metrology compliance audit:\n\n"
-        f"OCR TEXT:\n{ocr_text}"
+        f"Analyze the following OCR text extracted from package image(s) and perform Legal Metrology analysis:\n\n"
+        f"PRIMARY EVIDENCE (PACKAGE OCR TEXT):\n{ocr_text}"
+        f"{ref_block}"
     )
 
     try:
@@ -294,7 +317,12 @@ def analyze_ocr_text(ocr_text: str, custom_prompt: str = None, api_key: str = No
 
                 raw_content = completion.choices[0].message.content or ""
                 parsed_json = extract_json_object(raw_content)
-                normalized_json = normalize_analysis_response(parsed_json, ocr_text=ocr_text)
+                normalized_json = normalize_analysis_response(
+                    parsed_json,
+                    ocr_text=ocr_text,
+                    barcodes=barcodes,
+                    product_reference=product_reference
+                )
 
                 return {
                     "success": True,
@@ -326,7 +354,12 @@ def analyze_ocr_text(ocr_text: str, custom_prompt: str = None, api_key: str = No
                     res_data = response.json()
                     raw_content = res_data["choices"][0]["message"]["content"]
                     parsed_json = extract_json_object(raw_content)
-                    normalized_json = normalize_analysis_response(parsed_json, ocr_text=ocr_text)
+                    normalized_json = normalize_analysis_response(
+                        parsed_json,
+                        ocr_text=ocr_text,
+                        barcodes=barcodes,
+                        product_reference=product_reference
+                    )
                     return {
                         "success": True,
                         "model": current_model,
@@ -336,14 +369,19 @@ def analyze_ocr_text(ocr_text: str, custom_prompt: str = None, api_key: str = No
                 logger.warning(f"HTTP fallback model {current_model} failed: {http_err}")
 
     # Ultimate fallback if LLM is completely unreachable
-    normalized_json = normalize_analysis_response({}, ocr_text=ocr_text)
+    normalized_json = normalize_analysis_response(
+        {},
+        ocr_text=ocr_text,
+        barcodes=barcodes,
+        product_reference=product_reference
+    )
     return {
         "success": True,
         "model": "rule-based-fallback",
         "analysis": normalized_json
     }
 
-def analyze_combined_batch_ocr(ocr_texts_dict: dict, custom_prompt: str = None, api_key: str = None, model: str = DEFAULT_MODEL) -> dict:
+def analyze_combined_batch_ocr(ocr_texts_dict: dict, custom_prompt: str = None, api_key: str = None, model: str = DEFAULT_MODEL, barcodes: list = None, product_reference: dict = None) -> dict:
     key = api_key or os.getenv("GROQ_API_KEY")
     if not key:
         return {
@@ -357,7 +395,16 @@ def analyze_combined_batch_ocr(ocr_texts_dict: dict, custom_prompt: str = None, 
 
     combined_text_block = "\n\n".join([f"=== {name} ===\n{text}" for name, text in ocr_texts_dict.items() if text and text.strip()])
 
-    user_content = f"Perform a combined 360-degree audit on the following image OCR texts:\n\n{combined_text_block}"
+    ref_block = ""
+    if barcodes:
+        ref_block += f"\n\nDETECTED BARCODES:\n{json.dumps(barcodes, indent=2)}"
+    if product_reference:
+        ref_block += f"\n\nPRODUCT REFERENCE DATA (OPEN FOOD FACTS - REFERENCE ONLY):\n{json.dumps(product_reference, indent=2)}"
+
+    user_content = (
+        f"Perform a combined 360-degree audit on the following image OCR texts:\n\n{combined_text_block}"
+        f"{ref_block}"
+    )
 
     try:
         # pyrefly: ignore [missing-import]
@@ -379,7 +426,12 @@ def analyze_combined_batch_ocr(ocr_texts_dict: dict, custom_prompt: str = None, 
 
                 raw_content = completion.choices[0].message.content or ""
                 parsed_json = extract_json_object(raw_content)
-                normalized_json = normalize_analysis_response(parsed_json, ocr_text=combined_text_block)
+                normalized_json = normalize_analysis_response(
+                    parsed_json,
+                    ocr_text=combined_text_block,
+                    barcodes=barcodes,
+                    product_reference=product_reference
+                )
 
                 return {
                     "success": True,
@@ -392,7 +444,12 @@ def analyze_combined_batch_ocr(ocr_texts_dict: dict, custom_prompt: str = None, 
     except ImportError:
         pass
 
-    normalized_json = normalize_analysis_response({}, ocr_text=combined_text_block)
+    normalized_json = normalize_analysis_response(
+        {},
+        ocr_text=combined_text_block,
+        barcodes=barcodes,
+        product_reference=product_reference
+    )
     return {
         "success": True,
         "model": "rule-based-fallback",
