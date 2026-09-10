@@ -50,6 +50,15 @@ const complaintSchema = new mongoose.Schema(
       default: 'SUBMITTED',
     },
 
+    // NEW: enforcement case tracking
+    enforcementCaseId: { type: String, unique: true, sparse: true },
+    verifiedAt: { type: Date },
+
+    // NEW: generated report reference (Cloudinary)
+    reportUrl: { type: String },
+    reportPublicId: { type: String },
+    reportGeneratedAt: { type: Date },
+
     // NEW: admin remarks, shown on the detail page
     adminRemarks: { type: String, trim: true, maxlength: 2000, default: '' },
   },

@@ -12,6 +12,9 @@ import {
   getAllInspections,
   getInspectionByIdAdmin,
   updateInspectionStatus,
+  getAllComplaintsAdmin,
+  getComplaintByIdAdmin,
+  updateComplaintReview,
 } from '../controllers/adminController.js';
 
 const router = express.Router();
@@ -33,5 +36,12 @@ router.delete('/users/:id', deleteUser);
 router.get('/inspections', getAllInspections);
 router.get('/inspections/:id', getInspectionByIdAdmin);
 router.patch('/inspections/:id/status', updateInspectionStatus);
+
+// COMPLAINT / VIOLATION REVIEW MANAGEMENT
+// Explicitly protected with protect + adminMiddleware (per your instruction to
+// use existing auth) even though the blanket router.use() above is disabled.
+router.get('/complaints', protect, adminMiddleware, getAllComplaintsAdmin);
+router.get('/complaints/:id', protect, adminMiddleware, getComplaintByIdAdmin);
+router.patch('/complaints/:id/review', protect, adminMiddleware, updateComplaintReview);
 
 export default router;
