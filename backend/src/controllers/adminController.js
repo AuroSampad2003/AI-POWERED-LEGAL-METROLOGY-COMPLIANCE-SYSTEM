@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import Inspection from '../models/Inspection.js';
 import Complaint from '../models/Complaint.js';
 import generateEnforcementCaseId from '../utils/generateCaseId.js';
+import { sendEscalationEmail } from '../services/complaintMailer.js';
 
 // =====================================================
 // ADMIN DASHBOARD STATISTICS
@@ -420,7 +421,7 @@ export const updateComplaintReview = async (req, res) => {
       });
     }
 
-    const complaint = await Complaint.findById(req.params.id);
+    const complaint = await Complaint.findById(req.params.id).populate('user', 'fullName email');
 
     if (!complaint) {
       return res.status(404).json({
@@ -429,18 +430,30 @@ export const updateComplaintReview = async (req, res) => {
       });
     }
 
+    const wasAlreadyEscalated = complaint.status === 'ESCALATED';
+
     if (status !== undefined) complaint.status = status;
     if (adminRemarks !== undefined) complaint.adminRemarks = adminRemarks;
 
-    // Generate the enforcement case ID exactly once, the first time a
-    // complaint becomes VERIFIED. Later status changes (e.g. ESCALATED)
-    // never touch or regenerate it.
     if (status === 'VERIFIED' && !complaint.enforcementCaseId) {
       complaint.enforcementCaseId = await generateEnforcementCaseId();
       complaint.verifiedAt = new Date();
     }
 
     await complaint.save();
+
+    // Notify the user by email exactly once — on the transition into
+    // ESCALATED, not on every subsequent remarks-only save.
+    if (status === 'ESCALATED' && !wasAlreadyEscalated) {
+      sendEscalationEmail({
+        to: complaint.user?.email,
+        fullName: complaint.user?.fullName,
+        complaintId: complaint.complaintId,
+        enforcementCaseId: complaint.enforcementCaseId,
+        productName: complaint.productName,
+        adminRemarks: complaint.adminRemarks,
+      });
+    }
 
     res.status(200).json({
       success: true,
