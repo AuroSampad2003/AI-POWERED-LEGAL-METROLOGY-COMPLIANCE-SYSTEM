@@ -105,7 +105,7 @@ const Sidebar = ({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }) => 
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 overflow-y-auto overflow-x-visible py-1">
+        <div className="flex-1 overflow-y-auto overflow-x-visible py-2">
           <SidebarSection title="Main" iconOnly={iconOnly}>
             <SidebarLink to="/dashboard" icon={LayoutDashboard} label="Dashboard" iconOnly={iconOnly} onClick={handleLinkClick} />
             <SidebarLink to="/inspection/new" icon={ScanLine} label="Scan / Check Product" iconOnly={iconOnly} highlight onClick={handleLinkClick} />
@@ -142,16 +142,13 @@ const Sidebar = ({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }) => 
               </span>
             </button>
           ) : (
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 rounded-lg p-1.5 -m-1.5 hover:bg-surface transition-colors duration-150">
               <span className="w-9 h-9 rounded-full bg-accent-600 text-white text-xs font-semibold flex items-center justify-center shrink-0">
                 {initials(user?.fullName) || 'U'}
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-ink-800 truncate">{user?.fullName}</p>
                 <p className="text-xs text-ink-500 truncate">{user?.email}</p>
-                <p className="text-[11px] text-accent-600 font-medium mt-0.5">
-                  {user?.role === 'ADMIN' ? 'Role: Admin' : 'Role: Consumer / User'}
-                </p>
               </div>
               <button
                 onClick={handleLogout}

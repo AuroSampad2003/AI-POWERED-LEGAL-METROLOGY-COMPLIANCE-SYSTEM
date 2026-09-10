@@ -1,4 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  ArrowLeft,
+  AlertTriangle,
+  CheckCircle2,
+  CircleAlert,
+  ClipboardCheck,
+  //Copy,
+  FileCheck2,
+  //FileJson2,
+  Image as ImageIcon,
+  Maximize2,
+  PackageCheck,
+  //RefreshCw,
+  ShieldAlert,
+  ShieldCheck,
+  X,
+  //ZoomIn,
+} from 'lucide-react';
 
 // Global set to cache texts that have completed typing once across tab switches and unmounts
 const typedTextCache = new Set();
@@ -11,6 +30,7 @@ const AiTypewriterText = ({ text = '', speed = 10, className = '' }) => {
 
   useEffect(() => {
     if (!text || !String(text).trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplayed('No context provided for this scan.');
       setIsTyping(false);
       return;
@@ -59,12 +79,14 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
 
   if (!inspection) return null;
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const navigate = useNavigate();
+
   const { productName, category, status, createdAt, images = [], analysis = {} } = inspection;
 
   const currentImage = images[selectedImageIndex] || images[0];
   const compliance = analysis?.legal_metrology_2011_compliance || {};
   const declarations = analysis?.declarations || {};
-  const mismatches = analysis?.mismatch_details || [];
   const summary = analysis?.summary || 'No summary available.';
   const context = analysis?.context || 'No product context provided by AI model.';
 
@@ -143,58 +165,95 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
   const isCompliant = compliance?.is_fully_compliant;
 
   return (
-    <div className="w-full text-black py-4 space-y-6 bg-white font-sans">
+    <div className="w-full text-ink-900 py-5 sm:py-7 space-y-6 bg-[#f8faf9] font-sans">
       {onBack && (
         <button
           onClick={onBack}
-          className="text-sm font-semibold text-accent-700 underline cursor-pointer hover:text-accent-600 mb-2 inline-block"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-500 hover:text-accent-700 mb-2 transition-colors cursor-pointer"
         >
-          ← Back to list
+          <ArrowLeft className="w-4 h-4" />
+          Back to inspections
         </button>
       )}
 
       {/* Header & Pure White Summary Metrics */}
-      <div className="bg-white space-y-4 border-b border-gray-200 pb-6">
+      <div className="bg-white border border-ink-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-black">
-              {productName || 'Inspection Analysis Report'}
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Category: <span className="font-semibold text-black">{category || 'General'}</span> | Scanned: {new Date(createdAt).toLocaleString('en-IN')}
-            </p>
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-accent-50 border border-accent-100 flex items-center justify-center shrink-0">
+                <ClipboardCheck className="w-5 h-5 text-accent-700" />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-700 mb-1">
+                  Inspection Analysis Report
+                </p>
+                <h2 className="text-2xl sm:text-3xl font-display font-semibold tracking-tight text-ink-900">
+                  {productName || 'Product Inspection'}
+                </h2>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-ink-500">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-ink-50 border border-ink-200">
+                <PackageCheck className="w-3.5 h-3.5" />
+                {category || 'General'}
+              </span>
+              <span className="text-ink-300">•</span>
+              <span>Scanned {new Date(createdAt).toLocaleString('en-IN')}</span>
+            </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs uppercase font-semibold px-3 py-1 bg-white text-black border border-gray-300">
-              {status}
+            <span className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide px-3 py-1.5 rounded-full border ${
+              status === 'NON_COMPLIANT'
+                ? 'bg-red-50 text-red-700 border-red-200'
+                : status === 'COMPLIANT'
+                ? 'bg-green-50 text-green-700 border-green-200'
+                : 'bg-amber-50 text-amber-700 border-amber-200'
+            }`}>
+              {status === 'NON_COMPLIANT'
+                ? <ShieldAlert className="w-3.5 h-3.5" />
+                : status === 'COMPLIANT'
+                ? <ShieldCheck className="w-3.5 h-3.5" />
+                : <CircleAlert className="w-3.5 h-3.5" />}
+              {String(status || '').replaceAll('_', ' ')}
             </span>
-            <span className={`text-xs uppercase font-bold px-3 py-1 ${
-              isCompliant
+            {/* <span className={`text-xs uppercase font-bold px-3 py-1 ${isCompliant
                 ? 'text-green-600'
                 : 'text-red-600'
-            }`}>
+              }`}>
               {isCompliant ? 'COMPLIANT' : 'NON-COMPLIANT'}
-            </span>
+            </span> */}
+
+            {status === 'NON_COMPLIANT' && (
+              <button
+                onClick={() => navigate(`/complaints/new/${inspection._id}`)}
+                className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide px-4 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow-sm shadow-red-600/15 transition-all cursor-pointer"
+              >
+                <AlertTriangle className="w-3.5 h-3.5" />
+                Report This Product
+              </button>
+            )}
+
           </div>
         </div>
 
         {/* Clean Pure White Summary Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-          <div className="p-3 bg-white border border-gray-200 rounded">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Rules</p>
-            <p className="text-xl font-bold text-black mt-1">7</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-1">
+          <div className="p-4 bg-ink-50/50 border border-ink-200 rounded-xl">
+            <p className="text-[10px] font-semibold text-ink-500 uppercase tracking-[0.12em]">Total Rules</p>
+            <p className="text-2xl font-display font-semibold text-ink-900 mt-1">7</p>
           </div>
-          <div className="p-3 bg-white border border-gray-200 rounded">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Present</p>
-            <p className="text-xl font-bold text-green-600 mt-1">{presentCount}</p>
+          <div className="p-4 bg-ink-50/50 border border-ink-200 rounded-xl">
+            <p className="text-[10px] font-semibold text-ink-500 uppercase tracking-[0.12em]">Present</p>
+            <p className="text-2xl font-display font-semibold text-green-700 mt-1">{presentCount}</p>
           </div>
-          <div className="p-3 bg-white border border-gray-200 rounded">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Missing</p>
-            <p className="text-xl font-bold text-red-600 mt-1">{missingCount}</p>
+          <div className="p-4 bg-ink-50/50 border border-ink-200 rounded-xl">
+            <p className="text-[10px] font-semibold text-ink-500 uppercase tracking-[0.12em]">Missing</p>
+            <p className="text-2xl font-display font-semibold text-red-700 mt-1">{missingCount}</p>
           </div>
-          <div className="p-3 bg-white border border-gray-200 rounded">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">AI Confidence</p>
-            <p className="text-xl font-bold text-black mt-1">
+          <div className="p-4 bg-ink-50/50 border border-ink-200 rounded-xl">
+            <p className="text-[10px] font-semibold text-ink-500 uppercase tracking-[0.12em]">AI Confidence</p>
+            <p className="text-2xl font-display font-semibold text-ink-900 mt-1">
               {compliance?.confidence_score !== undefined ? `${Math.round(compliance.confidence_score * 100)}%` : 'N/A'}
             </p>
           </div>
@@ -202,59 +261,56 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
       </div>
 
       {/* Underline Tab Bar with Accent Color */}
-      <div className="flex flex-wrap gap-6 bg-white border-b border-gray-200 px-1">
+      <div className="flex flex-wrap gap-1 bg-white border border-ink-200 rounded-xl p-1 shadow-sm">
         <button
           onClick={() => setActiveTab('image')}
-          className={`py-3 px-2 text-sm font-bold cursor-pointer transition-all ${
-            activeTab === 'image'
-              ? 'border-b-2 border-accent-600 text-accent-700'
-              : 'border-b-2 border-transparent text-gray-500 hover:text-black'
-          }`}
+          className={`py-2.5 px-3 text-sm font-semibold cursor-pointer transition-all rounded-lg ${activeTab === 'image'
+              ? 'bg-accent-50 text-accent-700'
+              : 'text-ink-500 hover:bg-ink-50 hover:text-ink-800'
+            }`}
         >
           Annotated Scan & Context View
         </button>
         <button
           onClick={() => setActiveTab('declarations')}
-          className={`py-3 px-2 text-sm font-bold cursor-pointer transition-all ${
-            activeTab === 'declarations'
-              ? 'border-b-2 border-accent-600 text-accent-700'
-              : 'border-b-2 border-transparent text-gray-500 hover:text-black'
-          }`}
+          className={`py-2.5 px-3 text-sm font-semibold cursor-pointer transition-all rounded-lg ${activeTab === 'declarations'
+              ? 'bg-accent-50 text-accent-700'
+              : 'text-ink-500 hover:bg-ink-50 hover:text-ink-800'
+            }`}
         >
           Declarations Verification ({presentCount}/7)
         </button>
         <button
           onClick={() => setActiveTab('json')}
-          className={`py-3 px-4 text-sm font-bold cursor-pointer transition-all ${
-            activeTab === 'json'
-              ? 'border-b-2 border-accent-600 text-accent-700'
-              : 'border-b-2 border-transparent text-gray-500 hover:text-black'
-          }`}
+          className={`py-3 px-4 text-sm font-bold cursor-pointer transition-all ${activeTab === 'json'
+              ? 'bg-accent-50 text-accent-700'
+              : 'text-ink-500 hover:bg-ink-50 hover:text-ink-800'
+            }`}
         >
           Raw JSON Payload
         </button>
       </div>
 
       {/* Tab Area Container — Pure White Background */}
-      <div className="bg-white min-h-[450px]">
+      <div className="bg-transparent min-h-[450px]">
 
         {/* TAB 1: Side-by-Side Annotated OCR Image & Product Context */}
         {activeTab === 'image' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
+
             {/* Left Column: Main Image View (Slides smoothly to Left & Stays) + Stacked Avatar PFP Row */}
             <div className="lg:col-span-7 space-y-4 animate-slide-left">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-gray-200 pb-3">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-ink-200 pb-3">
                 <div>
-                  <h3 className="text-base font-bold text-black">Annotated OCR View</h3>
-                  <p className="text-xs text-gray-500">Click image to expand full view (PFP style)</p>
+                  <h3 className="flex items-center gap-2 text-base font-semibold text-ink-900"><ImageIcon className="w-4 h-4 text-accent-600" />Annotated OCR View</h3>
+                  <p className="text-xs text-ink-500 mt-1">Review detected text and bounding boxes</p>
                 </div>
                 {hasAnnotated && (
                   <button
                     onClick={() => setShowOriginal(!showOriginal)}
-                    className="text-xs font-bold bg-accent-600 text-white px-3 py-1.5 rounded cursor-pointer hover:bg-accent-700 shadow-sm"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold bg-accent-600 text-white px-3 py-2 rounded-lg cursor-pointer hover:bg-accent-700 shadow-sm transition-colors"
                   >
-                    {showOriginal ? 'Show Bounding Boxes' : 'Show Original Image'}
+                    {showOriginal ? <><ShieldCheck className="w-3.5 h-3.5" /> Show Bounding Boxes</> : <><ImageIcon className="w-3.5 h-3.5" /> Show Original Image</>}
                   </button>
                 )}
               </div>
@@ -262,7 +318,7 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
               {/* Main Image View Canvas — Clickable PFP style on Pure White */}
               <div
                 onClick={() => imageSrc && setLightboxOpen(true)}
-                className="bg-white border border-gray-200 flex items-center justify-center p-4 min-h-[380px] w-full relative overflow-hidden transition-all duration-300 rounded cursor-zoom-in group hover:border-accent-600"
+                className="bg-ink-50 border border-ink-200 flex items-center justify-center p-3 sm:p-4 min-h-[380px] w-full relative overflow-hidden transition-all duration-300 rounded-2xl cursor-zoom-in group hover:border-accent-400 shadow-sm"
                 title="Click to view full high-res image"
               >
                 {imageSrc ? (
@@ -274,8 +330,8 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
                       className="max-h-[480px] max-w-full object-contain shadow-sm transition-all duration-300 group-hover:scale-102"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all flex items-center justify-center">
-                      <span className="opacity-0 group-hover:opacity-100 bg-accent-600 text-white text-xs font-bold px-3 py-1.5 rounded shadow transition-all">
-                        🔍 Click to Expand PFP View
+                      <span className="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1.5 bg-ink-900/90 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-lg transition-all">
+                        <Maximize2 className="w-3.5 h-3.5" /> Click to expand
                       </span>
                     </div>
                   </>
@@ -284,44 +340,90 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
                 )}
               </div>
 
-              {/* Overlapping PFP Avatar Style Image Stack Deck */}
-              {images.length > 1 && (
-                <div className="pt-2 space-y-2">
-                  <p className="text-xs font-bold text-black uppercase tracking-wider">
-                    Package Image Views ({images.length} stacked image views):
-                  </p>
-                  
-                  {/* Overlapping circular PFP avatars stacked on top of each other */}
-                  <div className="flex items-center -space-x-3 overflow-visible py-2">
-                    {images.map((img, idx) => {
-                      const isSelected = selectedImageIndex === idx;
-                      const imgSrcThumb = img.annotatedImage || img.url;
+              {/* Package image selector */}
+              {images.length > 0 && (
+                <div className="pt-1">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-500">
+                        Package image views
+                      </p>
+                      <p className="text-xs text-ink-400 mt-0.5">
+                        Select a view to inspect
+                      </p>
+                    </div>
 
-                      return (
-                        <div
-                          key={idx}
-                          onClick={() => setSelectedImageIndex(idx)}
-                          className={`relative cursor-pointer transition-all duration-300 transform ${
-                            isSelected
-                              ? 'z-30 scale-110 ring-4 ring-accent-600 shadow-lg'
-                              : 'z-10 opacity-70 hover:opacity-100 hover:scale-105 hover:z-20'
-                          }`}
-                          title={img.view || `View ${idx + 1}`}
-                        >
-                          <div className="w-14 h-14 rounded-full overflow-hidden bg-white border-2 border-white shadow-md flex items-center justify-center">
-                            <img
-                              src={imgSrcThumb}
-                              alt={img.view || `View ${idx + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                    
-                    <span className="text-xs font-semibold text-gray-600 pl-4">
-                      Active: <strong className="text-black">{currentImage?.view || `Image ${selectedImageIndex + 1}`}</strong>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-500 bg-white border border-ink-200 px-2.5 py-1.5 rounded-full">
+                      <ImageIcon className="w-3.5 h-3.5" />
+                      {images.length} {images.length === 1 ? 'image' : 'images'}
                     </span>
+                  </div>
+
+                  <div className="bg-white border border-ink-200 rounded-2xl p-3 shadow-sm">
+                    <div className="flex flex-wrap gap-2.5">
+                      {images.map((img, idx) => {
+                        const isSelected = selectedImageIndex === idx;
+                        const imgSrcThumb = img.annotatedImage || img.url;
+                        const viewLabel = img.view || `IMAGE ${idx + 1}`;
+
+                        return (
+                          <button
+                            type="button"
+                            key={idx}
+                            onClick={() => setSelectedImageIndex(idx)}
+                            className={`group relative flex items-center gap-2.5 rounded-xl border p-1.5 pr-3 text-left transition-all duration-200 cursor-pointer ${
+                              isSelected
+                                ? 'border-accent-600 bg-accent-50 ring-1 ring-accent-600 shadow-sm'
+                                : 'border-ink-200 bg-white hover:border-accent-300 hover:bg-ink-50'
+                            }`}
+                            title={`View ${viewLabel}`}
+                            aria-label={`Select ${viewLabel}`}
+                          >
+                            <div className={`relative w-16 h-14 sm:w-20 sm:h-16 rounded-lg overflow-hidden shrink-0 bg-ink-100 ${
+                              isSelected ? 'ring-1 ring-accent-200' : ''
+                            }`}>
+                              <img
+                                src={imgSrcThumb}
+                                alt={viewLabel}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <span className={`absolute bottom-1 right-1 text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
+                                isSelected
+                                  ? 'bg-accent-600 text-white'
+                                  : 'bg-ink-900/75 text-white'
+                              }`}>
+                                {idx + 1}
+                              </span>
+                            </div>
+
+                            <div className="min-w-0">
+                              <p className={`text-xs font-bold uppercase tracking-wide truncate ${
+                                isSelected ? 'text-accent-700' : 'text-ink-700'
+                              }`}>
+                                {viewLabel}
+                              </p>
+                              <p className="text-[10px] text-ink-400 mt-0.5">
+                                {isSelected ? 'Currently viewing' : 'View image'}
+                              </p>
+                            </div>
+
+                            {isSelected && (
+                              <CheckCircle2 className="w-4 h-4 text-accent-600 ml-1 shrink-0" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-ink-100">
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent-600" />
+                      <span className="text-xs text-ink-500">
+                        Active view:
+                      </span>
+                      <span className="text-xs font-semibold text-ink-900">
+                        {currentImage?.view || `Image ${selectedImageIndex + 1}`}
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -330,45 +432,44 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
             {/* Right Column: Product Context & Audit Summary (Pure White Cards with AI Typewriter Response) */}
             <div className="lg:col-span-5 space-y-6">
               <div>
-                <h3 className="text-base font-bold text-black uppercase tracking-wide">Product Inspection Context</h3>
+                <h3 className="flex items-center gap-2 text-base font-semibold text-ink-900"><FileCheck2 className="w-4 h-4 text-accent-600" />Product Inspection Context</h3>
                 <p className="text-xs text-gray-500 mt-0.5">Context and overall metrology audit summary</p>
               </div>
 
               {/* Prominent Text Size for Product Overview & Label Context */}
-              <div className="bg-white border border-gray-200 p-5 rounded space-y-2">
-                <h4 className="font-bold text-sm text-black uppercase tracking-wider border-b border-gray-200 pb-1.5 flex items-center justify-between">
+              <div className="bg-white border border-ink-200 p-5 rounded-xl space-y-3 shadow-sm">
+                <h4 className="font-semibold text-xs text-ink-700 uppercase tracking-[0.1em] border-b border-ink-200 pb-2 flex items-center justify-between">
                   <span>Product Overview & Label Context:</span>
                 </h4>
-                <p className="text-base text-black leading-relaxed pt-1">
+                <p className="text-sm text-ink-700 leading-7 pt-1">
                   <AiTypewriterText text={context} speed={10} />
                 </p>
               </div>
 
               {/* Prominent Text Size for Compliance Audit Summary */}
-              <div className="bg-white border border-gray-200 p-5 rounded space-y-2">
-                <h4 className="font-bold text-sm text-black uppercase tracking-wider border-b border-gray-200 pb-1.5 flex items-center justify-between">
+              <div className="bg-white border border-ink-200 p-5 rounded-xl space-y-3 shadow-sm">
+                <h4 className="font-semibold text-xs text-ink-700 uppercase tracking-[0.1em] border-b border-ink-200 pb-2 flex items-center justify-between">
                   <span>Compliance Audit Overview:</span>
                 </h4>
-                <p className="text-base text-black leading-relaxed pt-1">
+                <p className="text-sm text-ink-700 leading-7 pt-1">
                   <AiTypewriterText text={summary} speed={10} />
                 </p>
               </div>
 
               {/* Quick Status Breakdown Card */}
-              <div className="p-4 space-y-2 text-sm bg-white border border-gray-200 rounded">
-                <div className="flex justify-between border-b border-gray-200 pb-2">
+              <div className="p-4 space-y-3 text-sm bg-white border border-ink-200 rounded-xl shadow-sm">
+                <div className="flex justify-between border-b border-ink-100 pb-2.5">
                   <span>Mandatory Rules Compliant:</span>
                   <span className="font-bold text-green-700">{presentCount} / 7</span>
                 </div>
-                <div className="flex justify-between border-b border-gray-200 pb-2">
+                <div className="flex justify-between border-b border-ink-100 pb-2.5">
                   <span>Mandatory Rules Missing:</span>
                   <span className="font-bold text-red-600">{missingCount} / 7</span>
                 </div>
                 <div className="flex justify-between pt-1">
                   <span>Overall Status:</span>
-                  <span className={`font-bold uppercase ${
-                    isCompliant ? 'text-green-700' : 'text-red-600'
-                  }`}>
+                  <span className={`font-bold uppercase ${isCompliant ? 'text-green-700' : 'text-red-600'
+                    }`}>
                     {isCompliant ? 'Compliant' : 'Non-Compliant'}
                   </span>
                 </div>
@@ -391,7 +492,7 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
         {/* TAB 2: Declarations Verification Table (Classic Table View) */}
         {activeTab === 'declarations' && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-gray-200 pb-3">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-ink-200 pb-3">
               <div>
                 <h3 className="text-xl font-bold text-black">Mandatory Declarations Verification</h3>
                 <p className="text-sm text-gray-500 mt-0.5">Legal Metrology (Packaged Commodities) Rules, 2011 Compliance Audit</p>
@@ -402,10 +503,10 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
             </div>
 
             {/* Classic Table */}
-            <div className="overflow-x-auto border border-gray-200 rounded-lg bg-white">
+            <div className="overflow-x-auto border border-ink-200 rounded-xl bg-white shadow-sm">
               <table className="w-full text-left border-collapse font-sans text-sm">
                 <thead>
-                  <tr className="bg-gray-100/80 border-b border-gray-200 text-gray-800 font-bold uppercase tracking-wider text-xs">
+                  <tr className="bg-ink-50 border-b border-ink-200 text-ink-700 font-bold uppercase tracking-wider text-xs">
                     <th className="p-4 min-w-[220px]">Declaration & Rule Mandate</th>
                     <th className="p-4 w-32 text-center">Status</th>
                     <th className="p-4 min-w-[240px]">Detected Label Text</th>
@@ -423,8 +524,8 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
                     const isPresent = statusStr === 'present';
 
                     return (
-                      <tr key={dec.key} className="hover:bg-gray-50/60 transition-colors">
-                        
+                      <tr key={dec.key} className="hover:bg-accent-50/30 transition-colors">
+
                         {/* 1. Declaration & Rule */}
                         <td className="p-4 align-top space-y-1.5">
                           <div className="flex items-center gap-2">
@@ -440,12 +541,11 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
 
                         {/* 2. Status */}
                         <td className="p-4 align-top text-center">
-                          <span className={`inline-block text-xs font-bold px-3 py-1 uppercase rounded ${
-                            isPresent
+                          <span className={`inline-block text-xs font-bold px-3 py-1 uppercase rounded ${isPresent
                               ? 'text-green-700'
                               : 'text-red-700'
-                          }`}>
-                            {isPresent ? 'Present' : 'Missing'}
+                            }`}>
+                            {isPresent ? <><CheckCircle2 className="w-3.5 h-3.5" /> Present</> : <><CircleAlert className="w-3.5 h-3.5" /> Missing</>}
                           </span>
                         </td>
 
@@ -515,7 +615,7 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
                 {copiedJson ? 'Copied to Clipboard' : 'Copy JSON'}
               </button>
             </div>
-            <pre className="text-xs font-mono text-black bg-white border border-gray-200 p-4 rounded overflow-x-auto max-h-[600px] leading-relaxed">
+            <pre className="text-xs font-mono text-slate-100 bg-[#0f172a] text-slate-100 border border-ink-200 p-5 rounded-xl overflow-x-auto max-h-[600px] shadow-sm leading-relaxed">
               <code>{JSON.stringify(analysis, null, 2)}</code>
             </pre>
           </div>
@@ -526,14 +626,14 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
       {lightboxOpen && imageSrc && (
         <div
           onClick={() => setLightboxOpen(false)}
-          className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4 cursor-zoom-out animate-fadeIn"
+          className="fixed inset-0 z-50 bg-ink-950/95 backdrop-blur-sm flex flex-col items-center justify-center p-4 cursor-zoom-out animate-fadeIn"
         >
           <div className="relative max-w-5xl max-h-[90vh] flex flex-col items-center justify-center">
             <button
               onClick={() => setLightboxOpen(false)}
-              className="absolute -top-10 right-0 text-white font-bold text-sm bg-accent-600 hover:bg-accent-700 px-3 py-1 rounded cursor-pointer"
+              className="absolute -top-12 right-0 inline-flex items-center gap-1.5 text-white font-semibold text-xs bg-white/10 hover:bg-white/20 border border-white/15 px-3 py-2 rounded-lg cursor-pointer backdrop-blur"
             >
-              ✕ Close PFP View
+              <X className="w-4 h-4" /> Close
             </button>
             <img
               src={imageSrc}
@@ -541,7 +641,7 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
               className="max-h-[85vh] max-w-full object-contain shadow-2xl rounded"
               onClick={(e) => e.stopPropagation()}
             />
-            <p className="text-white text-xs font-semibold mt-3 text-center bg-accent-600/90 px-4 py-1.5 rounded shadow">
+            <p className="inline-flex items-center gap-1.5 text-white text-xs font-semibold mt-3 text-center bg-ink-900/90 border border-white/10 px-4 py-2 rounded-lg shadow-lg">
               {currentImage?.view || `Image ${selectedImageIndex + 1}`} ({showOriginal ? 'Original Image' : 'Annotated Bounding Boxes'})
             </p>
           </div>

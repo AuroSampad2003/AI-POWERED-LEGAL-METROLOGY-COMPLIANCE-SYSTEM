@@ -10,7 +10,7 @@ import upload from '../config/multerConfig.js';
 
 const router = express.Router();
 
-router.post('/', protect, upload.array('images', 6), createInspection);
+router.post('/', protect, upload.array('images', 3), createInspection);
 router.get('/', protect, getMyInspections);
 router.get('/stats/dashboard', protect, getDashboardStats);
 router.get('/:id', protect, getInspectionById);
