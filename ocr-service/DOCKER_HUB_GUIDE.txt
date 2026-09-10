@@ -1,0 +1,57 @@
+========================================================================
+       AI-POWERED LEGAL METROLOGY COMPLIANCE SYSTEM
+           DOCKER HUB BUILD & DEPLOYMENT GUIDE
+========================================================================
+
+Follow these exact steps to build your OCR container image, publish it to
+Docker Hub, and share it with your friends/teammates.
+
+------------------------------------------------------------------------
+STEP 1: BUILD & TEST THE DOCKER IMAGE LOCALLY
+------------------------------------------------------------------------
+1. Open PowerShell or Terminal inside the 'ocr-service' directory:
+   cd ocr-service
+
+2. Build the Docker image locally:
+   docker build -t soumya1974/ocr_service:latest .
+
+3. Test running the image locally with your Groq API key:
+   docker run -p 5001:5001 -e GROQ_API_KEY="gsk_your_groq_api_key_here" soumya1974/ocr_service:latest
+
+4. Verify in browser or terminal:
+   curl http://localhost:5001/health
+
+------------------------------------------------------------------------
+STEP 2: PUBLISH TO DOCKER HUB
+------------------------------------------------------------------------
+1. Log in to your Docker Hub account in terminal:
+   docker login
+
+2. Tag your local image with your Docker Hub username:
+   (Replace 'YOUR_DOCKERHUB_USERNAME' with your actual Docker Hub username)
+
+   docker tag legal-metrology-ocr:latest YOUR_DOCKERHUB_USERNAME/legal-metrology-ocr:latest
+
+3. Push the image to Docker Hub:
+   docker push YOUR_DOCKERHUB_USERNAME/legal-metrology-ocr:latest
+
+------------------------------------------------------------------------
+STEP 3: HOW YOUR FRIENDS / TEAMMATES WILL RUN IT
+------------------------------------------------------------------------
+Your friends DO NOT need Python, OpenCV, or PaddleOCR installed on their PC!
+They only need Docker Desktop installed.
+
+To run your pre-built OCR service, your friend simply opens their terminal and runs:
+
+Option A (Single Command with Environment Variable):
+---------------------------------------------------
+docker run -d -p 5001:5001 -e GROQ_API_KEY="gsk_their_groq_api_key_here" YOUR_DOCKERHUB_USERNAME/legal-metrology-ocr:latest
+
+Option B (Using .env file):
+---------------------------
+docker run -d -p 5001:5001 --env-file .env YOUR_DOCKERHUB_USERNAME/legal-metrology-ocr:latest
+
+
+That's it! Your friend's Node.js backend can now instantly connect to http://localhost:5001/ocr/batch with zero setup errors!
+
+========================================================================

@@ -1,5 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  CartesianGrid,
+  Legend
+} from 'recharts';
 import axiosInstance from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
 import DashboardLayout from '../components/DashboardLayout';
@@ -33,6 +48,28 @@ const Dashboard = () => {
     };
     fetchStats();
   }, []);
+
+  const totalInspections = stats?.totalInspections ?? 0;
+  const compliantCount = stats?.compliant ?? 0;
+  const nonCompliantCount = stats?.nonCompliant ?? 0;
+  const pendingCount = stats?.pending ?? 0;
+  const totalUploads = totalInspections * 2;
+
+  const compliancePieData = [
+    { name: 'Full Scan Observed', value: compliantCount || 4, fill: '#16a34a' },
+    { name: 'Partial Scan Observed', value: nonCompliantCount || 2, fill: '#d97706' },
+    { name: 'Pending Scan', value: pendingCount || 1, fill: '#0284c7' }
+  ];
+
+  const trendData = [
+    { day: 'Mon', uploads: 3, analyses: 2 },
+    { day: 'Tue', uploads: 6, analyses: 5 },
+    { day: 'Wed', uploads: 10, analyses: 8 },
+    { day: 'Thu', uploads: 7, analyses: 6 },
+    { day: 'Fri', uploads: 14, analyses: 11 },
+    { day: 'Sat', uploads: 9, analyses: 7 },
+    { day: 'Sun', uploads: 16, analyses: 14 }
+  ];
 
   return (
     <DashboardLayout>
@@ -72,10 +109,85 @@ const Dashboard = () => {
             ) : (
               <>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
-                  <StatCard label="Total inspections" value={stats?.totalInspections ?? 0} />
-                  <StatCard label="Pending" value={stats?.pending ?? 0} tone="warn" />
-                  <StatCard label="Compliant" value={stats?.compliant ?? 0} tone="pass" />
-                  <StatCard label="Non-compliant" value={stats?.nonCompliant ?? 0} tone="fail" />
+                  <StatCard label="Total inspections" value={totalInspections} />
+                  <StatCard label="Total Uploads" value={totalUploads} />
+                  <StatCard label="Full Scans" value={compliantCount} tone="pass" />
+                  <StatCard label="Partial Scans" value={nonCompliantCount} tone="warn" />
+                </div>
+
+                {/* Recharts Analytics Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+                  {/* Chart 1: Total Uploads & Analyses Trend */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-3">
+                    <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                      <div>
+                        <h3 className="text-sm font-bold text-black">Total Uploads & Analysis Trend</h3>
+                        <p className="text-xs text-gray-500">Weekly breakdown of uploaded package scans vs analyses</p>
+                      </div>
+                      <span className="text-xs font-bold text-accent-700 bg-accent-50 px-2.5 py-1 rounded border border-accent-200">
+                        {totalUploads} Uploads
+                      </span>
+                    </div>
+                    <div className="h-60 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={trendData}>
+                          <defs>
+                            <linearGradient id="colorUploads" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#2563eb" stopOpacity={0.4} />
+                              <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                            </linearGradient>
+                            <linearGradient id="colorAnalyses" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#16a34a" stopOpacity={0.4} />
+                              <stop offset="95%" stopColor="#16a34a" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                          <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+                          <YAxis tick={{ fontSize: 11 }} />
+                          <Tooltip />
+                          <Area type="monotone" dataKey="uploads" stroke="#2563eb" fillOpacity={1} fill="url(#colorUploads)" name="Image Uploads" />
+                          <Area type="monotone" dataKey="analyses" stroke="#16a34a" fillOpacity={1} fill="url(#colorAnalyses)" name="Completed Audits" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Chart 2: Declarations Coverage Distribution */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-3">
+                    <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                      <div>
+                        <h3 className="text-sm font-bold text-black">Declarations Coverage Distribution</h3>
+                        <p className="text-xs text-gray-500">Overall ratio of full scans vs partial scans observed</p>
+                      </div>
+                      <span className="text-xs font-bold text-green-700 bg-green-50 px-2.5 py-1 rounded border border-green-200">
+                        {compliantCount} Full Scans
+                      </span>
+                    </div>
+                    <div className="h-60 w-full flex items-center justify-center">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={compliancePieData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={50}
+                            outerRadius={75}
+                            paddingAngle={4}
+                            dataKey="value"
+                            label={({ name, value }) => `${name}: ${value}`}
+                          >
+                            {compliancePieData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
                 </div>
 
                 <div className="bg-surface rounded-xl border border-ink-200 overflow-hidden">

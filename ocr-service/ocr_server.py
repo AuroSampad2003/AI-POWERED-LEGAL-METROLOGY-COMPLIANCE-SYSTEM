@@ -1,7 +1,13 @@
+import os
+# Disable experimental PIR executor & oneDNN attribute bug in PaddlePaddle 2.6+/3.0+
+os.environ["FLAGS_enable_pir_api"] = "0"
+os.environ["FLAGS_enable_pir_in_executor"] = "0"
+os.environ["FLAGS_use_onednn"] = "0"
+os.environ["FLAGS_use_mkldnn"] = "0"
+
 import base64
 import json
 import logging
-import os
 import time
 import requests
 # pyrefly: ignore [missing-import]
@@ -27,30 +33,46 @@ CORS(app)
 ocr_engine = None
 
 def initialize_ocr_engine():
-    """Initializes global PaddleOCR engine once at startup with warm-up call and MKL-DNN CPU acceleration."""
+    """Initializes global PaddleOCR engine once at startup with warm-up call."""
     global ocr_engine
-    logger.info("Initializing PaddleOCR engine with MKL-DNN CPU acceleration...")
+    logger.info("Initializing PaddleOCR engine...")
     start_time = time.time()
     
-    # Try GPU first, fall back to high-speed CPU mode with MKL-DNN
+    init_attempts = [
+        lambda: PaddleOCR(lang='en', enable_mkldnn=False, use_gpu=False),
+        lambda: PaddleOCR(use_angle_cls=False, lang='en', enable_mkldnn=False, use_gpu=False),
+        lambda: PaddleOCR(lang='en', enable_mkldnn=False, show_log=False),
+        lambda: PaddleOCR(lang='en')
+    ]
+    
+    for attempt in init_attempts:
+        try:
+            ocr_engine = attempt()
+            if ocr_engine is not None:
+                logger.info("PaddleOCR engine initialized successfully.")
+                break
+        except Exception as err:
+            logger.warning(f"PaddleOCR init attempt failed ({err}), trying fallback signature...")
+
+    if ocr_engine is None:
+        logger.error("Failed to initialize PaddleOCR engine. Will retry on first request.")
+        return None
+
+    dummy_img = np.zeros((50, 50, 3), dtype=np.uint8)
     try:
-        ocr_engine = PaddleOCR(use_angle_cls=False, lang='en', use_gpu=True)
-        dummy_img = np.zeros((50, 50, 3), dtype=np.uint8)
-        _ = ocr_engine.ocr(dummy_img, cls=False)
-        logger.info("PaddleOCR initialized successfully with GPU acceleration.")
-    except Exception as gpu_err:
-        logger.warning(f"GPU acceleration unavailable ({gpu_err}). Enabling high-speed MKL-DNN CPU mode...")
-        ocr_engine = PaddleOCR(use_angle_cls=False, lang='en', use_gpu=False, enable_mkldnn=True, cpu_threads=6)
-        dummy_img = np.zeros((50, 50, 3), dtype=np.uint8)
-        _ = ocr_engine.ocr(dummy_img, cls=False)
-        logger.info("PaddleOCR initialized successfully with MKL-DNN multi-threaded CPU mode.")
+        _ = ocr_engine.ocr(dummy_img)
+    except Exception as warm_err:
+        logger.warning(f"OCR warm-up call note: {warm_err}")
 
     init_duration = time.time() - start_time
-    logger.info(f"OCR warm-up call complete. Startup took {init_duration:.2f} seconds.")
+    logger.info(f"OCR engine initialization complete. Took {init_duration:.2f} seconds.")
+    return ocr_engine
 
-
-# Execute initialization at startup
-initialize_ocr_engine()
+def get_ocr_engine():
+    global ocr_engine
+    if ocr_engine is None:
+        initialize_ocr_engine()
+    return ocr_engine
 
 def calculate_font_metrics(box, dpi=300):
     """
@@ -208,7 +230,10 @@ def process_ocr():
 
     # Execute PaddleOCR text extraction
     try:
-        raw_ocr_res = ocr_engine.ocr(img, cls=False)
+        try:
+            raw_ocr_res = ocr_engine.ocr(img, cls=False)
+        except TypeError:
+            raw_ocr_res = ocr_engine.ocr(img)
         formatted_lines = []
 
         if raw_ocr_res and isinstance(raw_ocr_res, list) and len(raw_ocr_res) > 0:
@@ -411,7 +436,10 @@ def process_ocr_batch():
         index, img = item
         try:
             # Execute PaddleOCR text extraction at full original resolution
-            raw_ocr_res = ocr_engine.ocr(img, cls=False)
+            try:
+                raw_ocr_res = ocr_engine.ocr(img, cls=False)
+            except TypeError:
+                raw_ocr_res = ocr_engine.ocr(img)
             formatted_lines = []
 
             if raw_ocr_res and isinstance(raw_ocr_res, list) and len(raw_ocr_res) > 0:
@@ -461,20 +489,12 @@ def process_ocr_batch():
                 "error": str(e)
             }
 
-    # Step 1: Execute PaddleOCR on all images in parallel across worker threads
-    results = [None] * len(images_to_process)
-    max_workers = min(8, len(images_to_process))
-    
-    logger.info(f"Processing batch of {len(images_to_process)} images in parallel with {max_workers} threads...")
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_map = {executor.submit(_worker, item): item[0] for item in images_to_process}
-        for future in as_completed(future_map):
-            idx = future_map[future]
-            try:
-                res = future.result()
-                results[idx] = res
-            except Exception as err:
-                results[idx] = {"index": idx, "image_name": f"Image {idx+1}", "success": False, "error": str(err)}
+    # Step 1: Execute PaddleOCR sequentially on all images (PaddleOCR engine instance is single-threaded)
+    results = []
+    logger.info(f"Processing batch of {len(images_to_process)} images sequentially...")
+    for item in images_to_process:
+        res = _worker(item)
+        results.append(res)
 
     # Step 2: Combine all OCR texts and run ONE single LLM request (60% faster)
     ocr_texts_dict = {
@@ -664,5 +684,9 @@ def process_ocr_audit_only():
 if __name__ == "__main__":
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", 5001))
+    try:
+        initialize_ocr_engine()
+    except Exception as init_err:
+        logger.warning(f"Startup OCR init warning: {init_err}")
     logger.info(f"Starting Flask PaddleOCR Microservice server on {host}:{port}...")
     app.run(host=host, port=port, debug=False)
