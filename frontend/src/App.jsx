@@ -21,6 +21,7 @@ import InspectionManagement from './pages/admin/InspectionManagement';
 import InspectionDetail from './pages/admin/InspectionDetail';
 import NotFound from './pages/NotFound';
 
+
 function App() {
   return (
     <BrowserRouter>
