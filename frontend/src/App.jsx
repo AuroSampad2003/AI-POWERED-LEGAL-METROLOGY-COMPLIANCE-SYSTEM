@@ -1,10 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-
 import Login from './pages/Login';
 import Register from './pages/Register';
-
 import Dashboard from './pages/Dashboard';
 import NewInspection from './pages/NewInspection';
 import MyInspections from './pages/MyInspections';
@@ -16,29 +14,19 @@ import SavedProducts from './pages/SavedProducts';
 import Help from './pages/Help';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
-
-// Admin pages
 import AdminDashboard from './pages/AdminDashboard';
-import AdminAnalytics from './pages/AdminAnalytics';
-import AdminInspections from './pages/AdminInspections';
-import AdminProducts from './pages/AdminProducts';
-import AdminViolations from './pages/AdminViolations';
-import AdminUsers from './pages/AdminUsers';
-import AdminRules from './pages/AdminRules';
-import AdminSettings from './pages/AdminSettings';
 import ViolationReview from './pages/admin/ViolationReview';
 import ComplaintReview from './pages/admin/ComplaintReview';
 import InspectionManagement from './pages/admin/InspectionManagement';
 import InspectionDetail from './pages/admin/InspectionDetail';
 import NotFound from './pages/NotFound';
 
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* ==================== AUTH ==================== */}
-
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
