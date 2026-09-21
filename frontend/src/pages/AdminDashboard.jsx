@@ -21,6 +21,7 @@ const AdminDashboard = () => {
                 setLoading(true);
             }
 
+            
             setError('');
 
             const response = await axiosInstance.get('/admin/dashboard');
