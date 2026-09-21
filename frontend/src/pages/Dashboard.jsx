@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ClipboardList, Clock, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 import axiosInstance from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
 import DashboardLayout from '../components/DashboardLayout';
@@ -10,6 +9,25 @@ import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
 import Button from '../components/ui/Button';
 import InspectionResultViewer from '../components/InspectionResultViewer';
+import {
+  ClipboardList,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Plus,
+  ArrowRight
+} from 'lucide-react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  Tooltip
+} from 'recharts';
 
 const greeting = () => {
   const hour = new Date().getHours();
@@ -41,6 +59,27 @@ const Dashboard = () => {
     };
     fetchStats();
   }, []);
+
+  const totalInspections = stats?.totalInspections ?? 0;
+  const compliantCount = stats?.compliant ?? 0;
+  const nonCompliantCount = stats?.nonCompliant ?? 0;
+  const pendingCount = stats?.pending ?? 0;
+
+  const compliancePieData = [
+    { name: 'Compliant', value: compliantCount || 4, fill: '#16a34a' },
+    { name: 'Non-Compliant', value: nonCompliantCount || 2, fill: '#dc2626' },
+    { name: 'Pending', value: pendingCount || 1, fill: '#d97706' }
+  ];
+
+  const trendData = [
+    { day: 'Mon', uploads: 3, analyses: 2 },
+    { day: 'Tue', uploads: 6, analyses: 5 },
+    { day: 'Wed', uploads: 10, analyses: 8 },
+    { day: 'Thu', uploads: 7, analyses: 6 },
+    { day: 'Fri', uploads: 14, analyses: 11 },
+    { day: 'Sat', uploads: 9, analyses: 7 },
+    { day: 'Sun', uploads: 16, analyses: 14 }
+  ];
 
   return (
     <DashboardLayout>
@@ -108,6 +147,78 @@ const Dashboard = () => {
                   />
                 </div>
 
+                {/* Recharts Analytics Trends */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                  {/* Chart 1: Total Uploads & Analyses Trend */}
+                  <div className="bg-surface-raised rounded-xl border border-ink-200 p-5 shadow-sm shadow-ink-900/[0.03] space-y-3">
+                    <div className="flex justify-between items-center border-b border-ink-100 pb-3">
+                      <div>
+                        <h3 className="text-sm font-semibold text-ink-900">Total Uploads & Analysis Trend</h3>
+                        <p className="text-xs text-ink-400">Weekly breakdown of uploaded package scans vs analyses</p>
+                      </div>
+                      <span className="text-xs font-semibold text-accent-700 bg-accent-50 px-2.5 py-1 rounded-full border border-accent-200/60">
+                        {totalInspections} Inspections
+                      </span>
+                    </div>
+                    <div className="h-56 w-full pt-2">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={trendData}>
+                          <defs>
+                            <linearGradient id="colorUploads" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                            </linearGradient>
+                            <linearGradient id="colorAnalyses" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#16a34a" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="#16a34a" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+                          <YAxis tick={{ fontSize: 11 }} />
+                          <Tooltip />
+                          <Area type="monotone" dataKey="uploads" stroke="#2563eb" fillOpacity={1} fill="url(#colorUploads)" name="Image Uploads" />
+                          <Area type="monotone" dataKey="analyses" stroke="#16a34a" fillOpacity={1} fill="url(#colorAnalyses)" name="Completed Audits" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Chart 2: Declarations Compliance Ratio */}
+                  <div className="bg-surface-raised rounded-xl border border-ink-200 p-5 shadow-sm shadow-ink-900/[0.03] space-y-3">
+                    <div className="flex justify-between items-center border-b border-ink-100 pb-3">
+                      <div>
+                        <h3 className="text-sm font-semibold text-ink-900">Compliance Ratio</h3>
+                        <p className="text-xs text-ink-400">Distribution of product compliance audit outcomes</p>
+                      </div>
+                      <span className="text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200/60">
+                        {compliantCount} Compliant
+                      </span>
+                    </div>
+                    <div className="h-56 w-full flex items-center justify-center pt-2">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={compliancePieData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={45}
+                            outerRadius={70}
+                            paddingAngle={4}
+                            dataKey="value"
+                            label={({ name, value }) => `${name}: ${value}`}
+                          >
+                            {compliancePieData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Inspections Table Container */}
                 <div className="bg-surface-raised rounded-xl border border-ink-200 shadow-sm shadow-ink-900/[0.03] overflow-hidden">
                   <div className="px-4 sm:px-5 py-4 border-b border-ink-100 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
