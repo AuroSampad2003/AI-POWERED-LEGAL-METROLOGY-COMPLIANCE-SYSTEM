@@ -1,10 +1,7 @@
-import AdminPlaceholderPage from '../components/admin/AdminPlaceholderPage';
+import AdminResourcePage from '../components/admin/AdminResourcePage';
 
 const AdminSettings = () => (
-  <AdminPlaceholderPage
-    title="Settings"
-    description="Configure administrative and platform settings."
-  />
+  <AdminResourcePage type="settings" />
 );
 
 export default AdminSettings;

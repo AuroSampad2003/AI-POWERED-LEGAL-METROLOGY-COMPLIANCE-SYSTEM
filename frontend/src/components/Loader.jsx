@@ -3,10 +3,14 @@ const Loader = ({ label = 'Loading...' }) => {
     <div
       role="status"
       aria-live="polite"
-      className="flex flex-col items-center justify-center gap-3 py-16 animate-fade-in"
+      className="flex flex-col items-center justify-center gap-4 py-20 animate-fade-in"
     >
-      <div className="w-7 h-7 border-[3px] border-ink-200 border-t-accent-600 rounded-full animate-spin" />
-      <p className="text-sm text-ink-500">{label}</p>
+      <div className="relative flex h-10 w-10 items-center justify-center">
+        <div className="absolute inset-0 rounded-full border-2 border-accent-100" />
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-transparent border-t-accent-600" />
+        <span className="absolute h-2 w-2 rounded-full bg-accent-600" />
+      </div>
+      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-500">{label}</p>
     </div>
   );
 };

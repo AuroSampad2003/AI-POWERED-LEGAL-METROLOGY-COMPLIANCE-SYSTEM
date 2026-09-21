@@ -1,10 +1,7 @@
-import AdminPlaceholderPage from '../components/admin/AdminPlaceholderPage';
+import AdminResourcePage from '../components/admin/AdminResourcePage';
 
 const AdminViolations = () => (
-  <AdminPlaceholderPage
-    title="Violation Review"
-    description="Review detected compliance violations and inspection findings."
-  />
+  <AdminResourcePage type="violations" />
 );
 
 export default AdminViolations;

@@ -33,43 +33,47 @@ const HowItWorks = () => {
   return (
     <section
       id="how-it-works"
-      className="bg-gray-50 py-20 px-6"
+      className="bg-gradient-to-b from-surface to-emerald-50/60 py-20 px-6"
     >
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-bold">
+        <div className="reveal-up mb-14 text-center">
+          <h2 className="text-3xl md:text-4xl font-black text-ink-900">
             How It Works
           </h2>
-          <p className="text-gray-500 mt-3">
-            From product image to compliance report.
+          <p className="mt-3 text-base text-ink-600 md:text-lg">
+            From product image to compliance report in four simple steps.
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, index) => {
             const Icon = step.icon;
 
             return (
-              <div key={index} className="text-center">
-                <div className="w-16 h-16 mx-auto rounded-full bg-green-700 text-white flex items-center justify-center">
+              <div
+                key={index}
+                className="reveal-up card-hover relative rounded-3xl border border-ink-100 bg-white p-6 text-center shadow-[0_18px_40px_-30px_rgba(16,26,46,0.25)]"
+                style={{ animationDelay: `${index * 120}ms` }}
+              >
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-600 text-white shadow-lg shadow-accent-600/20">
                   <Icon size={28} />
                 </div>
 
-                <p className="text-green-700 font-semibold mt-4">
+                <p className="mt-4 text-sm font-bold uppercase tracking-[0.14em] text-accent-700">
                   Step {index + 1}
                 </p>
 
-                <h3 className="font-semibold text-lg mt-2">
+                <h3 className="mt-2 text-xl font-bold text-ink-900">
                   {step.title}
                 </h3>
 
-                <p className="text-gray-500 mt-2">
+                <p className="mt-3 text-sm leading-relaxed text-ink-600">
                   {step.description}
                 </p>
 
                 {index !== steps.length - 1 && (
                   <ArrowRight
-                    className="hidden lg:block text-green-600"
+                    className="absolute -right-5 top-1/2 hidden -translate-y-1/2 text-accent-300 lg:block"
                     size={24}
                   />
                 )}

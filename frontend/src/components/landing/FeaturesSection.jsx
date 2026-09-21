@@ -34,35 +34,37 @@ const features = [
 
 const FeaturesSection = () => {
   return (
-    <section id="features" className="py-20 px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold">
+    <section id="features" className="bg-white/55 px-6 py-20 md:py-24">
+      <div className="mx-auto max-w-7xl">
+        <div className="reveal-up mb-12 text-center">
+          <p className="section-kicker mb-3">Built for confidence</p>
+          <h2 className="text-3xl md:text-4xl font-black text-ink-900">
             Key Features
           </h2>
-          <p className="text-gray-500 mt-3">
-            A complete compliance solution for consumers and inspectors.
+          <p className="mt-3 text-base text-ink-600 md:text-lg">
+            A complete compliance solution for consumers, inspectors, and regulators.
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((feature, index) => {
             const Icon = feature.icon;
 
             return (
               <div
                 key={index}
-                className="p-6 bg-white border border-gray-200 rounded-2xl hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                className={`card-hover reveal-up stagger-${Math.min(index + 1, 4)} rounded-2xl border border-ink-100 bg-white p-6 shadow-[0_18px_40px_-30px_rgba(16,26,46,0.2)]`}
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="w-14 h-14 rounded-xl bg-green-100 text-green-700 flex items-center justify-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-50 text-accent-700 shadow-inner shadow-accent-100">
                   <Icon size={28} />
                 </div>
 
-                <h3 className="text-lg font-semibold mt-5">
+                <h3 className="mt-5 text-lg font-bold text-ink-900">
                   {feature.title}
                 </h3>
 
-                <p className="text-gray-500 mt-3 leading-relaxed">
+                <p className="mt-3 text-sm leading-relaxed text-ink-600">
                   {feature.description}
                 </p>
               </div>

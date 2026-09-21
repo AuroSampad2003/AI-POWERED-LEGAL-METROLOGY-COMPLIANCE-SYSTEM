@@ -4,6 +4,10 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
+const PageTransition = ({ children }) => (
+  <div className="page-shell">{children}</div>
+);
+
 // Public pages
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
@@ -29,6 +33,11 @@ import ViolationReview from './pages/admin/ViolationReview';
 import ComplaintReview from './pages/admin/ComplaintReview';
 import InspectionManagement from './pages/admin/InspectionManagement';
 import InspectionDetail from './pages/admin/InspectionDetail';
+import AdminAnalytics from './pages/AdminAnalytics';
+import AdminProducts from './pages/AdminProducts';
+import AdminRules from './pages/AdminRules';
+import AdminSettings from './pages/AdminSettings';
+import AdminUsers from './pages/AdminUsers';
 
 function App() {
   return (
@@ -36,16 +45,16 @@ function App() {
       <AuthProvider>
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
+          <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+          <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
 
           {/* User routes */}
           <Route
             path="/dashboard"
             element={
               <ProtectedRoute allowedRoles={['USER']}>
-                <Dashboard />
+                <PageTransition><Dashboard /></PageTransition>
               </ProtectedRoute>
             }
           />
@@ -54,7 +63,7 @@ function App() {
             path="/inspection/new"
             element={
               <ProtectedRoute allowedRoles={['USER']}>
-                <NewInspection />
+                <PageTransition><NewInspection /></PageTransition>
               </ProtectedRoute>
             }
           />
@@ -63,7 +72,7 @@ function App() {
             path="/inspections"
             element={
               <ProtectedRoute allowedRoles={['USER']}>
-                <MyInspections />
+                <PageTransition><MyInspections /></PageTransition>
               </ProtectedRoute>
             }
           />
@@ -72,7 +81,7 @@ function App() {
             path="/complaints"
             element={
               <ProtectedRoute allowedRoles={['USER']}>
-                <MyComplaints />
+                <PageTransition><MyComplaints /></PageTransition>
               </ProtectedRoute>
             }
           />
@@ -81,7 +90,7 @@ function App() {
             path="/compliance-history"
             element={
               <ProtectedRoute allowedRoles={['USER']}>
-                <ComplianceHistory />
+                <PageTransition><ComplianceHistory /></PageTransition>
               </ProtectedRoute>
             }
           />
@@ -90,7 +99,7 @@ function App() {
             path="/complaints/new/:inspectionId"
             element={
               <ProtectedRoute allowedRoles={['USER']}>
-                <ComplaintSubmit />
+                <PageTransition><ComplaintSubmit /></PageTransition>
               </ProtectedRoute>
             }
           />
@@ -99,7 +108,7 @@ function App() {
             path="/complaints/:id"
             element={
               <ProtectedRoute allowedRoles={['USER']}>
-                <ComplaintDetail />
+                <PageTransition><ComplaintDetail /></PageTransition>
               </ProtectedRoute>
             }
           />
@@ -108,7 +117,7 @@ function App() {
             path="/saved-products"
             element={
               <ProtectedRoute allowedRoles={['USER']}>
-                <SavedProducts />
+                <PageTransition><SavedProducts /></PageTransition>
               </ProtectedRoute>
             }
           />
@@ -117,7 +126,7 @@ function App() {
             path="/help"
             element={
               <ProtectedRoute allowedRoles={['USER']}>
-                <Help />
+                <PageTransition><Help /></PageTransition>
               </ProtectedRoute>
             }
           />
@@ -126,7 +135,7 @@ function App() {
             path="/profile"
             element={
               <ProtectedRoute allowedRoles={['USER']}>
-                <Profile />
+                <PageTransition><Profile /></PageTransition>
               </ProtectedRoute>
             }
           />
@@ -135,7 +144,7 @@ function App() {
             path="/settings"
             element={
               <ProtectedRoute allowedRoles={['USER']}>
-                <Settings />
+                <PageTransition><Settings /></PageTransition>
               </ProtectedRoute>
             }
           />
@@ -143,31 +152,37 @@ function App() {
           {/* Admin routes */}
           <Route
             path="/admin/dashboard"
-            element={<AdminDashboard />}
+            element={<PageTransition><AdminDashboard /></PageTransition>}
           />
 
           <Route
             path="/admin/violations"
-            element={<ViolationReview />}
+            element={<PageTransition><ViolationReview /></PageTransition>}
           />
 
           <Route
             path="/admin/violations/:id"
-            element={<ComplaintReview />}
+            element={<PageTransition><ComplaintReview /></PageTransition>}
           />
 
           <Route
             path="/admin/inspections"
-            element={<InspectionManagement />}
+            element={<PageTransition><InspectionManagement /></PageTransition>}
           />
 
           <Route
             path="/admin/inspections/:id"
-            element={<InspectionDetail />}
+            element={<PageTransition><InspectionDetail /></PageTransition>}
           />
 
+          <Route path="/admin/analytics" element={<PageTransition><AdminAnalytics /></PageTransition>} />
+          <Route path="/admin/products" element={<PageTransition><AdminProducts /></PageTransition>} />
+          <Route path="/admin/rules" element={<PageTransition><AdminRules /></PageTransition>} />
+          <Route path="/admin/settings" element={<PageTransition><AdminSettings /></PageTransition>} />
+          <Route path="/admin/users" element={<PageTransition><AdminUsers /></PageTransition>} />
+
           {/* 404 route */}
-          <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

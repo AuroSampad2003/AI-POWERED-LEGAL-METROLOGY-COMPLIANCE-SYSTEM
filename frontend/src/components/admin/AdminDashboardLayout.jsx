@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Menu, ShieldCheck } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import AdminSidebar from './AdminSidebar';
 import useBreakpoint from '../../hooks/useBreakpoint';
+import BrandMark from '../ui/BrandMark';
 
 const AdminDashboardLayout = ({ children }) => {
   const bp = useBreakpoint();
@@ -10,7 +11,7 @@ const AdminDashboardLayout = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white flex">
+    <div className="app-shell min-h-screen flex">
       <AdminSidebar
         collapsed={collapsed}
         onToggleCollapse={() => setCollapsed((c) => !c)}
@@ -20,27 +21,20 @@ const AdminDashboardLayout = ({ children }) => {
 
       <div className="flex-1 min-w-0 flex flex-col">
         {bp === 'mobile' && (
-          <header className="h-14 bg-white border-b border-ink-200 flex items-center gap-3 px-4 sticky top-0 z-30 shrink-0">
+          <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-ink-200/80 bg-white/85 px-4 shadow-sm backdrop-blur-xl">
             <button
               onClick={() => setMobileOpen(true)}
-              className="p-1.5 -ml-1.5 rounded-md text-ink-600 hover:bg-ink-100 transition-colors duration-150"
+              className="-ml-1.5 rounded-xl p-2 text-ink-600 transition-colors duration-200 hover:bg-accent-50 hover:text-accent-700"
               aria-label="Open admin menu"
             >
               <Menu className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-6 h-6 rounded bg-accent-600 flex items-center justify-center shrink-0">
-                <ShieldCheck
-                  className="w-3.5 h-3.5 text-white"
-                  strokeWidth={2}
-                />
-              </div>
-
-              <span className="text-sm font-semibold text-ink-900 truncate">
-                LM Compliance
-              </span>
-            </div>
+            <BrandMark
+              compact
+              textClassName="text-sm text-ink-900"
+              iconClassName="bg-accent-600"
+            />
           </header>
         )}
 

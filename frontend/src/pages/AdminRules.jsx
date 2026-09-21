@@ -1,10 +1,7 @@
-import AdminPlaceholderPage from '../components/admin/AdminPlaceholderPage';
+import AdminResourcePage from '../components/admin/AdminResourcePage';
 
 const AdminRules = () => (
-  <AdminPlaceholderPage
-    title="Rule Administration"
-    description="Manage Legal Metrology compliance rules and rule configurations."
-  />
+  <AdminResourcePage type="rules" />
 );
 
 export default AdminRules;

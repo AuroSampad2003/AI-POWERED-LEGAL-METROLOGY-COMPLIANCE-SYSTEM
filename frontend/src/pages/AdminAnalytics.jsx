@@ -1,10 +1,7 @@
-import AdminPlaceholderPage from '../components/admin/AdminPlaceholderPage';
+import AdminResourcePage from '../components/admin/AdminResourcePage';
 
 const AdminAnalytics = () => (
-  <AdminPlaceholderPage
-    title="Analytics"
-    description="View inspection, compliance, and system performance analytics."
-  />
+  <AdminResourcePage type="analytics" />
 );
 
 export default AdminAnalytics;

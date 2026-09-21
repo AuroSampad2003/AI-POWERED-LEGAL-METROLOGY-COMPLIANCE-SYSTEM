@@ -1,12 +1,12 @@
 const variants = {
   primary:
-    'bg-accent-600 text-white hover:bg-accent-700 active:bg-accent-700 disabled:bg-accent-100 disabled:text-accent-500',
+    'bg-accent-600 text-white shadow-sm shadow-accent-900/10 hover:-translate-y-0.5 hover:bg-accent-700 hover:shadow-md hover:shadow-accent-900/15 active:translate-y-0 active:bg-accent-700 disabled:bg-accent-100 disabled:text-accent-500',
   accent:
-    'bg-accent-600 text-white hover:bg-accent-700 active:bg-accent-700 disabled:bg-accent-100 disabled:text-accent-500',
+    'bg-accent-600 text-white shadow-sm shadow-accent-900/10 hover:-translate-y-0.5 hover:bg-accent-700 hover:shadow-md hover:shadow-accent-900/15 active:translate-y-0 active:bg-accent-700 disabled:bg-accent-100 disabled:text-accent-500',
   secondary:
-    'bg-white text-ink-700 border border-ink-200 hover:bg-ink-100 disabled:text-ink-400',
+    'border border-ink-200 bg-white text-ink-700 shadow-sm hover:-translate-y-0.5 hover:border-accent-200 hover:bg-accent-50 disabled:text-ink-400',
   ghost:
-    'bg-transparent text-ink-600 hover:bg-ink-100 disabled:text-ink-300',
+    'bg-transparent text-ink-600 hover:bg-ink-100 hover:text-accent-700 disabled:text-ink-300',
   danger:
     'bg-white text-status-fail border border-ink-200 hover:bg-status-fail-bg',
 };
@@ -31,7 +31,7 @@ const Button = ({
     <button
       type={type}
       disabled={disabled || loading}
-      className={`inline-flex items-center justify-center gap-2 font-medium transition-colors duration-150 disabled:cursor-not-allowed ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 disabled:cursor-not-allowed ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
       {loading && (

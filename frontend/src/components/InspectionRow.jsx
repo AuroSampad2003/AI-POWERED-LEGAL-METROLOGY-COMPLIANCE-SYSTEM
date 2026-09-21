@@ -13,17 +13,17 @@ const InspectionRow = ({ inspection, onClick }) => {
   return (
     <div
       onClick={() => onClick && onClick(inspection)}
-      className="flex items-center justify-between gap-4 py-4 px-4 sm:px-5 border-b border-ink-100 last:border-none hover:bg-surface cursor-pointer transition-colors duration-150 group"
+      className="group flex cursor-pointer items-center justify-between gap-4 border-b border-ink-100 px-4 py-4 transition-all duration-200 last:border-none hover:bg-accent-50/45 sm:px-5"
     >
       <div className="min-w-0 flex items-center gap-3.5">
         {mainImg?.annotatedImage || mainImg?.url ? (
           <img
             src={mainImg.annotatedImage || mainImg.url}
             alt={inspection.productName || 'Inspection'}
-            className="w-12 h-12 rounded-xl object-cover bg-ink-100 ring-1 ring-black/5 shadow-sm shrink-0 group-hover:ring-accent-600/30 transition-all duration-150"
+            className="h-12 w-12 shrink-0 rounded-2xl bg-ink-100 object-cover shadow-sm ring-1 ring-black/5 transition-all duration-200 group-hover:scale-105 group-hover:ring-accent-600/30"
           />
         ) : (
-          <div className="w-12 h-12 rounded-xl bg-ink-100 ring-1 ring-black/5 flex items-center justify-center text-ink-400 shrink-0">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-ink-100 text-ink-400 ring-1 ring-black/5">
             <Package className="w-4.5 h-4.5" strokeWidth={1.75} />
           </div>
         )}
@@ -40,7 +40,7 @@ const InspectionRow = ({ inspection, onClick }) => {
 
       <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
         <Badge status={inspection.status} />
-        <span className="w-6 h-6 rounded-full flex items-center justify-center text-ink-400 bg-ink-100 group-hover:bg-accent-100 group-hover:text-accent-600 transition-colors duration-150">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-ink-100 text-ink-400 transition-all duration-200 group-hover:bg-accent-100 group-hover:text-accent-600">
           <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-150" strokeWidth={2.25} />
         </span>
       </div>

@@ -1,10 +1,7 @@
-import AdminPlaceholderPage from '../components/admin/AdminPlaceholderPage';
+import AdminResourcePage from '../components/admin/AdminResourcePage';
 
 const AdminInspections = () => (
-  <AdminPlaceholderPage
-    title="Inspections"
-    description="Review and manage product inspections submitted by users."
-  />
+  <AdminResourcePage type="inspections" />
 );
 
 export default AdminInspections;

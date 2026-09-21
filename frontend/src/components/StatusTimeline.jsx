@@ -36,7 +36,7 @@ const StatusTimeline = ({ status }) => {
     const currentIndex = STAGE_INDEX_BY_STATUS[status] ?? 0;
 
     return (
-        <div className="flex items-start w-full">
+        <div className="flex w-full items-start rounded-2xl border border-ink-100 bg-ink-50/45 px-3 py-5 sm:px-5">
             {STAGES.map((stage, idx) => {
                 const Icon = stage.icon;
                 const isOutcomeStage = stage.key === 'OUTCOME';
@@ -72,10 +72,10 @@ const StatusTimeline = ({ status }) => {
                     >
                         <div className="flex flex-col items-center gap-2 w-20 shrink-0">
                             <span
-                                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${iconWrapperClasses}`}
+                                className={`flex h-10 w-10 items-center justify-center rounded-2xl transition-all duration-300 ${iconWrapperClasses}`}
                             >
                                 <Icon
-                                    className="w-[17px] h-[17px]"
+                                    className="h-4.25 w-4.25"
                                     strokeWidth={isCurrent ? 2.2 : 1.9}
                                 />
                             </span>
@@ -89,7 +89,7 @@ const StatusTimeline = ({ status }) => {
 
                         {idx !== STAGES.length - 1 && (
                             <div
-                                className={`h-0.5 flex-1 mx-2 sm:mx-3 mt-[-24px] rounded-full transition-colors duration-200 ${lineClasses}`}
+                                className={`-mt-6 h-0.5 flex-1 mx-2 rounded-full transition-colors duration-200 sm:mx-3 ${lineClasses}`}
                             />
                         )}
                     </div>

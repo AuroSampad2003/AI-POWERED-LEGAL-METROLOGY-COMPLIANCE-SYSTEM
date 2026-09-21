@@ -3,7 +3,7 @@ const Field = ({ label, htmlFor, error, children, hint }) => {
     <div>
       <label
         htmlFor={htmlFor}
-        className="block text-[13px] font-medium text-ink-700 mb-1.5"
+        className="mb-2 block text-xs font-bold uppercase tracking-[0.08em] text-ink-600"
       >
         {label}
       </label>
@@ -24,8 +24,8 @@ const Field = ({ label, htmlFor, error, children, hint }) => {
 };
 
 export const inputClasses = (hasError) =>
-  `w-full px-3.5 py-2.5 text-[15px] bg-white border rounded-lg text-ink-800 placeholder:text-ink-400 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 ${
-    hasError ? 'border-status-fail' : 'border-ink-200 hover:border-ink-300'
+    `w-full rounded-xl border bg-white/90 px-3.5 py-3 text-sm text-ink-800 shadow-sm shadow-ink-900/[0.02] placeholder:text-ink-400 transition-all duration-200 focus:border-accent-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-accent-500/10 ${
+    hasError ? 'border-status-fail focus:ring-status-fail/10' : 'border-ink-200 hover:border-accent-300'
   }`;
 
 export default Field;

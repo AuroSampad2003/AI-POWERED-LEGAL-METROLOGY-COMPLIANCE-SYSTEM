@@ -9,7 +9,7 @@ import LandingFooter from '../components/landing/LandingFooter';
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-white text-slate-900 overflow-hidden">
+    <div className="min-h-screen overflow-hidden bg-[#fbfefc] text-slate-900">
       {/* Navigation */}
       <LandingNavbar />
 

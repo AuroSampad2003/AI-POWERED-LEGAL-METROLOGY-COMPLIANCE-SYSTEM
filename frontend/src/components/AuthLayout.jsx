@@ -1,27 +1,28 @@
+import BrandMark from './ui/BrandMark';
+
 const AuthLayout = ({ eyebrow, title, subtitle, children }) => {
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-paper">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(59,130,87,0.16),transparent_24%),linear-gradient(135deg,#f1faf4_0%,#ffffff_48%,#edf8f1_100%)] lg:flex-row">
+      <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full border-28 border-accent-100/50" />
+      <div className="pointer-events-none absolute -bottom-32 left-1/3 h-96 w-96 rounded-full border-36 border-emerald-100/45" />
       {/* Identity panel */}
-      <div className="lg:w-[42%] bg-ink-900 text-white px-6 sm:px-10 py-10 lg:py-16 flex flex-col justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-md bg-accent-600 flex items-center justify-center shrink-0">
-            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-              <path d="M12 3l7 3.5v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9v-5L12 3z" strokeLinejoin="round" />
-              <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <span className="text-sm font-medium text-ink-200">Legal Metrology Compliance Platform</span>
-        </div>
+      <div className="relative flex flex-col justify-between bg-ink-900 px-6 py-10 text-white shadow-2xl shadow-ink-900/15 sm:px-10 lg:w-[42%] lg:py-16">
+        <BrandMark
+          compact
+          textClassName="text-sm text-white"
+          iconClassName="bg-accent-600"
+          className="text-white"
+        />
 
         <div className="my-10 lg:my-0">
-          <p className="text-accent-100/80 text-sm font-medium mb-3">{eyebrow}</p>
-          <h1 className="font-display text-3xl sm:text-4xl font-semibold leading-tight max-w-sm">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-accent-100/80">{eyebrow}</p>
+          <h1 className="max-w-sm font-display text-3xl font-semibold leading-tight sm:text-4xl">
             {title}
           </h1>
-          <p className="text-ink-300 text-[15px] mt-4 max-w-sm leading-relaxed">{subtitle}</p>
+          <p className="mt-4 max-w-sm text-[15px] leading-7 text-ink-300">{subtitle}</p>
         </div>
 
-        <dl className="hidden lg:grid grid-cols-3 gap-6 pt-8 border-t border-white/10">
+        <dl className="hidden grid-cols-3 gap-6 border-t border-white/10 pt-8 lg:grid">
           <div>
             <dt className="text-xs text-ink-400">Evidence</dt>
             <dd className="text-sm text-ink-100 mt-1">AI-assisted extraction</dd>
@@ -38,7 +39,7 @@ const AuthLayout = ({ eyebrow, title, subtitle, children }) => {
       </div>
 
       {/* Form panel */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-8 py-10 lg:py-16">
+      <div className="relative flex flex-1 items-center justify-center px-4 py-10 sm:px-8 lg:py-16">
         <div className="w-full max-w-sm animate-fade-in">{children}</div>
       </div>
     </div>

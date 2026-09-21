@@ -33,7 +33,7 @@ const Badge = ({ status }) => {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap ${colorClasses[entry.color]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border border-current/10 px-2.5 py-1 text-[11px] font-bold tracking-wide whitespace-nowrap ${colorClasses[entry.color]}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${dotClasses[entry.color]}`} />
       {entry.label}

@@ -7,12 +7,12 @@ const DefaultIcon = () => (
 
 const EmptyState = ({ title = 'Nothing here yet', message, action, icon: Icon }) => {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-14 px-6">
-      <div className="w-11 h-11 rounded-full bg-ink-100 flex items-center justify-center mb-3">
+    <div className="flex flex-col items-center justify-center px-6 py-16 text-center animate-fade-in">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-accent-100 bg-accent-50 shadow-inner shadow-accent-100/70">
         {Icon ? <Icon className="w-5 h-5 text-ink-400" strokeWidth={1.75} /> : <DefaultIcon />}
       </div>
-      <p className="text-sm font-medium text-ink-700">{title}</p>
-      {message && <p className="text-sm text-ink-500 mt-1 max-w-xs">{message}</p>}
+      <p className="text-sm font-bold text-ink-800">{title}</p>
+      {message && <p className="mt-1.5 max-w-sm text-sm leading-6 text-ink-500">{message}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );

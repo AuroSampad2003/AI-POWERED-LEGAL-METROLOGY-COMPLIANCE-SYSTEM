@@ -1,10 +1,7 @@
-import PlaceholderPage from '../components/PlaceholderPage';
+import InspectionCollectionPage from '../components/InspectionCollectionPage';
 
 const ComplianceHistory = () => (
-  <PlaceholderPage
-    title="Compliance History"
-    description="A historical view of your pass, fail and warning outcomes over time."
-  />
+  <InspectionCollectionPage mode="history" />
 );
 
 export default ComplianceHistory;

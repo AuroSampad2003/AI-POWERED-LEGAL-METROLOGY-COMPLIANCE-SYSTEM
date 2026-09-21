@@ -4,14 +4,14 @@ const SidebarLink = ({ to, icon: Icon, label, iconOnly, highlight, onClick }) =>
   const location = useLocation();
   const active = location.pathname === to;
 
-  const base = 'group relative flex items-center gap-3 rounded-lg text-sm font-medium transition-colors duration-150';
+  const base = 'group relative flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-200';
   const padding = iconOnly ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5';
 
   const tone = highlight
     ? 'bg-accent-600 text-white hover:bg-accent-700'
     : active
-    ? 'bg-accent-50 text-accent-700'
-    : 'text-ink-600 hover:bg-ink-100 hover:text-ink-800';
+    ? 'bg-accent-50 text-accent-700 shadow-sm shadow-accent-900/5'
+    : 'text-ink-600 hover:translate-x-0.5 hover:bg-ink-100 hover:text-ink-800';
 
   return (
     <Link to={to} onClick={onClick} className={`${base} ${padding} ${tone}`}>
@@ -20,7 +20,7 @@ const SidebarLink = ({ to, icon: Icon, label, iconOnly, highlight, onClick }) =>
       )}
 
       <Icon
-        className={`w-[18px] h-[18px] shrink-0 ${
+        className={`h-4.5 w-4.5 shrink-0 ${
           highlight ? 'text-white' : active ? 'text-accent-600' : 'text-ink-400 group-hover:text-ink-600'
         }`}
         strokeWidth={1.75}

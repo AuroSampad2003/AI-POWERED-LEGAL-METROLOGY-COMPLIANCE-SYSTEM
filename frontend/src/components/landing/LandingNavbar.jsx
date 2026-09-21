@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Menu, X, ArrowRight } from 'lucide-react';
+import { Menu, X, ArrowRight } from 'lucide-react';
+import BrandMark from '../ui/BrandMark';
 
 const NAV_LINKS = [
   { label: 'Home', href: '#home' },
@@ -41,14 +42,12 @@ const LandingNavbar = () => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between h-[72px]">
           {/* Brand */}
-          <Link to="/" className="group flex items-center gap-2.5 shrink-0">
-            <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-accent-100 text-accent-600 transition-transform duration-300 ease-out group-hover:scale-105 group-hover:-rotate-3">
-              <ShieldCheck className="w-5 h-5" strokeWidth={2.25} />
-            </span>
-            <span className="text-xl font-bold tracking-tight">
-              <span className="text-accent-700">PackSure</span>{' '}
-              <span className="text-ink-900">AI</span>
-            </span>
+          <Link to="/" className="group shrink-0 transition-transform duration-300 ease-out hover:scale-[1.01]">
+            <BrandMark
+              compact
+              textClassName="text-xl text-ink-900"
+              iconClassName="group-hover:-rotate-3 group-hover:scale-105"
+            />
           </Link>
 
           {/* Desktop links */}

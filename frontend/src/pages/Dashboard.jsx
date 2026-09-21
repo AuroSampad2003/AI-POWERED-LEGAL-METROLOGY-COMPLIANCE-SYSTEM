@@ -29,12 +29,7 @@ import {
   Tooltip
 } from 'recharts';
 
-const greeting = () => {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
-};
+const greeting = () => 'Welcome';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -83,7 +78,7 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
         {selectedInspection ? (
           <InspectionResultViewer
             inspection={selectedInspection}
@@ -91,12 +86,13 @@ const Dashboard = () => {
           />
         ) : (
           <>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-              <div>
+            <div className="reveal-up mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+              <div className="min-w-0">
+                <p className="section-kicker mb-2">Your compliance workspace</p>
                 <h2 className="font-display text-2xl sm:text-[26px] font-semibold text-ink-900 tracking-tight">
                   {greeting()}, {user?.fullName?.split(' ')[0]}
                 </h2>
-                <p className="text-sm text-ink-500 mt-1">
+                <p className="mt-2 max-w-xl text-sm leading-6 text-ink-500">
                   Here's how your product inspections are looking
                 </p>
               </div>
@@ -104,7 +100,7 @@ const Dashboard = () => {
                 variant="accent"
                 size="lg"
                 onClick={() => navigate('/inspection/new')}
-                className="w-full sm:w-auto gap-1.5"
+                className="w-full shrink-0 gap-1.5 sm:w-auto"
               >
                 <Plus className="w-4 h-4" strokeWidth={2.5} />
                 New product inspection
@@ -121,7 +117,7 @@ const Dashboard = () => {
               <Loader />
             ) : (
               <>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+                <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                   <StatCard
                     label="Total inspections"
                     value={stats?.totalInspections ?? 0}
@@ -148,9 +144,9 @@ const Dashboard = () => {
                 </div>
 
                 {/* Recharts Analytics Trends */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div className="mb-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
                   {/* Chart 1: Total Uploads & Analyses Trend */}
-                  <div className="bg-surface-raised rounded-xl border border-ink-200 p-5 shadow-sm shadow-ink-900/[0.03] space-y-3">
+                  <div className="surface-card rounded-2xl p-5 reveal-up stagger-1 space-y-3">
                     <div className="flex justify-between items-center border-b border-ink-100 pb-3">
                       <div>
                         <h3 className="text-sm font-semibold text-ink-900">Total Uploads & Analysis Trend</h3>
@@ -184,7 +180,7 @@ const Dashboard = () => {
                   </div>
 
                   {/* Chart 2: Declarations Compliance Ratio */}
-                  <div className="bg-surface-raised rounded-xl border border-ink-200 p-5 shadow-sm shadow-ink-900/[0.03] space-y-3">
+                  <div className="surface-card rounded-2xl p-5 reveal-up stagger-2 space-y-3">
                     <div className="flex justify-between items-center border-b border-ink-100 pb-3">
                       <div>
                         <h3 className="text-sm font-semibold text-ink-900">Compliance Ratio</h3>
@@ -219,7 +215,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Recent Inspections Table Container */}
-                <div className="bg-surface-raised rounded-xl border border-ink-200 shadow-sm shadow-ink-900/[0.03] overflow-hidden">
+                <div className="surface-card reveal-up stagger-3 overflow-hidden rounded-2xl">
                   <div className="px-4 sm:px-5 py-4 border-b border-ink-100 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="w-8 h-8 rounded-lg bg-accent-100 text-accent-700 flex items-center justify-center shrink-0">

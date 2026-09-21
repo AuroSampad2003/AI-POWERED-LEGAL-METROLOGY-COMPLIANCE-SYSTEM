@@ -12,13 +12,13 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  ShieldCheck,
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
 import useBreakpoint from '../../hooks/useBreakpoint';
 import SidebarSection from '../sidebar/SidebarSection';
 import SidebarLink from '../sidebar/SidebarLink';
+import BrandMark from '../ui/BrandMark';
 
 const initials = (name = '') =>
   name
@@ -96,28 +96,14 @@ const AdminSidebar = ({
               : 'justify-between px-4'
           }`}
         >
-          <div className="flex min-w-0 items-center gap-2.5">
-            {/* Logo */}
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-accent-600">
-              <ShieldCheck
-                className="h-[18px] w-[18px] text-white"
-                strokeWidth={2}
-              />
-            </div>
-
-            {/* Brand name */}
-            {!iconOnly && (
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-ink-900">
-                  LM Compliance
-                </p>
-
-                <p className="truncate text-[10px] font-medium text-ink-400">
-                  Administration
-                </p>
-              </div>
-            )}
-          </div>
+          {!iconOnly && (
+            <BrandMark
+              compact
+              showTagline
+              textClassName="text-sm text-ink-900"
+              iconClassName="bg-accent-600"
+            />
+          )}
 
           {/* Mobile close */}
           {isMobile && (

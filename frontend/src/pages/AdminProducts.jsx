@@ -1,10 +1,7 @@
-import AdminPlaceholderPage from '../components/admin/AdminPlaceholderPage';
+import AdminResourcePage from '../components/admin/AdminResourcePage';
 
 const AdminProducts = () => (
-  <AdminPlaceholderPage
-    title="Products"
-    description="Manage inspected products and their compliance information."
-  />
+  <AdminResourcePage type="products" />
 );
 
 export default AdminProducts;

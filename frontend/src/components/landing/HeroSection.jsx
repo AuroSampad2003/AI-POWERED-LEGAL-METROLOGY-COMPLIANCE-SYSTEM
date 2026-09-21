@@ -22,35 +22,38 @@ const HeroSection = () => {
   return (
     <section
       id="home"
-      className="relative overflow-hidden bg-gradient-to-b from-accent-50 via-surface to-surface px-6 py-20 md:py-28"
+      className="relative overflow-hidden bg-linear-to-b from-accent-50 via-surface to-surface px-6 py-16 md:py-24"
     >
-      {/* Ambient glow */}
-      <div className="pointer-events-none absolute -top-24 -right-16 h-96 w-96 rounded-full bg-accent-100/60 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 left-1/4 h-72 w-72 rounded-full bg-accent-50 blur-3xl" />
+      <div className="pointer-events-none absolute -top-20 -right-20 h-80 w-80 rounded-full bg-accent-100/80 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-10 left-8 h-72 w-72 rounded-full bg-emerald-100/70 blur-3xl" />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: 'radial-gradient(circle at top left, rgba(27,99,56,0.14), transparent 38%)' }}
+      />
 
       <div className="relative mx-auto grid max-w-7xl items-center gap-16 md:grid-cols-2">
-        {/* Copy column */}
-        <div className="hero-in" style={{ animationDelay: '0ms' }}>
-          <span className="inline-flex items-center gap-2 rounded-full border border-accent-100 bg-accent-50 px-3.5 py-1.5 text-xs font-semibold text-accent-700">
+        <div className="reveal-up" style={{ animationDelay: '0ms' }}>
+          <span className="inline-flex items-center gap-2 rounded-full border border-accent-100 bg-white/80 px-3.5 py-1.5 text-xs font-semibold text-accent-700 shadow-sm">
             <span className="h-1.5 w-1.5 rounded-full bg-accent-600" />
             SIH 2026 · SIH26034
           </span>
 
-          <h1 className="mt-6 text-4xl font-bold leading-[1.08] tracking-tight text-ink-900 md:text-6xl">
+          <h1 className="mt-6 max-w-3xl text-4xl font-black leading-[1.06] tracking-tight text-ink-900 md:text-6xl">
             Verify product labels.
-            <span className="block text-accent-700">Build consumer trust.</span>
+            <span className="block bg-linear-to-r from-accent-700 via-accent-600 to-emerald-600 bg-clip-text text-transparent">
+              Build consumer trust.
+            </span>
           </h1>
 
-          <p className="mt-6 max-w-lg text-lg leading-relaxed text-ink-600">
-            An AI-powered platform that scans packaged commodities, extracts
-            label declarations, and checks compliance with the Legal
-            Metrology (Packaged Commodities) Rules, 2011.
+          <p className="mt-6 max-w-xl text-base leading-7 text-ink-600 md:text-lg">
+            PackSure AI scans packaged commodities, extracts label declarations,
+            and validates them against Legal Metrology compliance rules in real time.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-4">
             <Link
               to="/inspection/new"
-              className="group inline-flex items-center gap-2 rounded-lg bg-accent-600 px-6 py-3.5 font-semibold text-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-accent-700 hover:shadow-lg hover:shadow-accent-600/20"
+              className="group inline-flex items-center gap-2 rounded-xl bg-accent-600 px-6 py-3.5 font-semibold text-white shadow-[0_12px_30px_-12px_rgba(27,99,56,0.7)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-accent-700 hover:shadow-[0_18px_40px_-12px_rgba(27,99,56,0.75)]"
             >
               Start Inspection
               <ArrowRight
@@ -61,7 +64,7 @@ const HeroSection = () => {
 
             <a
               href="#how-it-works"
-              className="inline-flex items-center gap-2 rounded-lg border border-ink-200 bg-white/70 px-6 py-3.5 font-semibold text-ink-800 backdrop-blur-sm transition-all duration-300 hover:border-accent-300 hover:bg-accent-50 hover:text-accent-700"
+              className="inline-flex items-center gap-2 rounded-xl border border-ink-200 bg-white/80 px-6 py-3.5 font-semibold text-ink-800 shadow-sm transition-all duration-300 hover:border-accent-300 hover:bg-accent-50 hover:text-accent-700"
             >
               Explore Features
             </a>
@@ -77,18 +80,9 @@ const HeroSection = () => {
           </div>
         </div>
 
-        {/* Visual column */}
-        <div className="hero-in mx-auto w-full max-w-md" style={{ animationDelay: '150ms' }}>
+        <div className="reveal-up mx-auto w-full max-w-md" style={{ animationDelay: '150ms' }}>
           <div className="relative mx-auto w-72">
-            {/* dotted grid backdrop */}
-            <div
-              className="absolute -inset-10 -z-10 rounded-[2rem] opacity-60"
-              style={{
-                backgroundImage:
-                  'linear-gradient(var(--color-accent-100) 1px, transparent 1px), linear-gradient(90deg, var(--color-accent-100) 1px, transparent 1px)',
-                backgroundSize: '28px 28px',
-              }}
-            />
+            <div className="hero-grid absolute -inset-10 -z-10 rounded-4xl opacity-70" />
 
             <div className="float-slow relative">
               {/* corner brackets */}
@@ -96,7 +90,7 @@ const HeroSection = () => {
               <span className="absolute -right-4 -bottom-4 h-8 w-8 rounded-br-md border-r-2 border-b-2 border-ink-800/60" />
 
               {/* Pouch illustration */}
-              <div className="relative mx-auto h-80 w-56 overflow-hidden rounded-[2rem] bg-gradient-to-b from-accent-600 to-accent-900 shadow-2xl">
+              <div className="relative mx-auto h-80 w-56 overflow-hidden rounded-4xl bg-linear-to-b from-accent-600 to-accent-900 shadow-2xl">
                 <div className="absolute inset-x-6 top-4 h-2 rounded-full bg-white/15" />
                 <div className="absolute inset-x-6 top-16 bottom-10 overflow-hidden rounded-2xl bg-white/10">
                   <div className="flex h-full flex-wrap content-center justify-center gap-2 p-4">
@@ -115,7 +109,7 @@ const HeroSection = () => {
                   </div>
                 </div>
                 {/* scan line */}
-                <div className="scan-line absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-accent-100 to-transparent" />
+                <div className="scan-line absolute inset-x-0 h-0.5 bg-linear-to-r from-transparent via-accent-100 to-transparent" />
               </div>
 
               {/* Floating label callouts */}

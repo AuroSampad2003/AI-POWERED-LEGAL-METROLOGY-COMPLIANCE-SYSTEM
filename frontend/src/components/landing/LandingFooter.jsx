@@ -9,13 +9,13 @@ const LandingFooter = () => {
         <div>
           <Link
             to="/"
-            className="text-2xl font-bold text-green-700"
+            className="text-2xl font-black tracking-tight text-accent-700"
           >
-            INNOVATRIX
+            PackSure AI
           </Link>
 
           <p className="text-gray-500 mt-4 leading-relaxed">
-            AI-Powered Legal Metrology Compliance System.
+            AI-powered packaging compliance and inspection platform.
           </p>
 
           <p className="text-sm text-gray-400 mt-3">
@@ -60,7 +60,7 @@ const LandingFooter = () => {
       <div className="border-t border-gray-100 px-6 py-5">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between gap-3 text-sm text-gray-500">
           <p>
-            © {new Date().getFullYear()} INNOVATRIX. All rights reserved.
+            © {new Date().getFullYear()} PackSure AI. All rights reserved.
           </p>
 
           <p>Built for SIH 2026</p>

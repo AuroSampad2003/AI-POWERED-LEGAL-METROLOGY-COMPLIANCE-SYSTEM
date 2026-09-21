@@ -1,10 +1,7 @@
-import PlaceholderPage from '../components/PlaceholderPage';
+import InspectionCollectionPage from '../components/InspectionCollectionPage';
 
 const SavedProducts = () => (
-  <PlaceholderPage
-    title="Saved Products"
-    description="Products you've bookmarked for future reference."
-  />
+  <InspectionCollectionPage mode="saved" />
 );
 
 export default SavedProducts;
