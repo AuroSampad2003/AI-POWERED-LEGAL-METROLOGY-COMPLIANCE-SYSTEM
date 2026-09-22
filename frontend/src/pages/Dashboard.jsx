@@ -61,9 +61,9 @@ const Dashboard = () => {
   const pendingCount = stats?.pending ?? 0;
 
   const compliancePieData = [
-    { name: 'Compliant', value: compliantCount || 4, fill: '#16a34a' },
-    { name: 'Non-Compliant', value: nonCompliantCount || 2, fill: '#dc2626' },
-    { name: 'Pending', value: pendingCount || 1, fill: '#d97706' }
+    { name: 'Compliant', value: compliantCount || 0, fill: '#16a34a' },
+    { name: 'Non-Compliant', value: nonCompliantCount || 0, fill: '#dc2626' },
+    { name: 'Pending', value: pendingCount || 0, fill: '#d97706' }
   ];
 
   const trendData = [

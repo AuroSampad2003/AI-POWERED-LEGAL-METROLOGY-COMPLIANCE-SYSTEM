@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -24,9 +24,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  CartesianGrid,
-  Legend
-} from 'recharts';
+  CartesianGrid} from 'recharts';
 
 const typedTextCache = new Set();
 
@@ -38,6 +36,7 @@ const AiTypewriterText = ({ text = '', speed = 10, className = '' }) => {
 
   useEffect(() => {
     if (!text || !String(text).trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplayed('No context provided for this scan.');
       setIsTyping(false);
       return;
@@ -220,7 +219,15 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
               <span>Scanned {new Date(createdAt).toLocaleString('en-IN')}</span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <button
+              onClick={() => navigate('/inspection/new')}
+              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide px-4 py-2.5 rounded-lg border border-accent-200 bg-accent-50 text-accent-700 hover:bg-accent-100 transition-all cursor-pointer"
+            >
+              <FileCheck2 className="w-3.5 h-3.5" />
+              Submit another inspection
+            </button>
+
             <span className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide px-3 py-1.5 rounded-full border ${
               status === 'NON_COMPLIANT'
                 ? 'bg-red-50 text-red-700 border-red-200'
@@ -236,7 +243,7 @@ const InspectionResultViewer = ({ inspection, onBack }) => {
               {String(status || '').replaceAll('_', ' ')}
             </span>
 
-            {status === 'NON_COMPLIANT' && (
+            {(status === 'NON_COMPLIANT' || status === 'ANALYZED' || status === 'FAILED' || compliance?.is_compliant === false) && (
               <button
                 onClick={() => navigate(`/complaints/new/${inspection._id}`)}
                 className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide px-4 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow-sm shadow-red-600/15 transition-all cursor-pointer"

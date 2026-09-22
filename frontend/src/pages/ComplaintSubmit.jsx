@@ -68,8 +68,17 @@ const ComplaintSubmit = () => {
         setSubmitting(true);
 
         try {
-            // Detail page comes in the next step — for now just confirm and go back.
-            navigate('/complaints');
+            const res = await axiosInstance.post('/complaints', {
+                inspectionId,
+                description,
+            });
+
+            if (res.data?.success) {
+                navigate('/complaints');
+                return;
+            }
+
+            setSubmitError(res.data?.message || 'Failed to submit complaint');
         } catch (err) {
             setSubmitError(err.response?.data?.message || 'Failed to submit complaint');
         } finally {
